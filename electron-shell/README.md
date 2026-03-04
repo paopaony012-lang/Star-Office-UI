@@ -23,6 +23,8 @@ npm run dev
 
 - `STAR_PROJECT_ROOT`：项目根目录（默认自动探测）
 - `STAR_BACKEND_PYTHON`：后端 Python 可执行路径
+- `STAR_BACKEND_HOST`：后端主机（默认 `127.0.0.1`）
+- `STAR_BACKEND_PORT`：后端端口（默认 `18791`）
 
 ## 说明
 

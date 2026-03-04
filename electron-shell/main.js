@@ -4,6 +4,10 @@ const fs = require("fs");
 const path = require("path");
 const net = require("net");
 const APP_NAME = "Star Office UI";
+const BACKEND_HOST = process.env.STAR_BACKEND_HOST || "127.0.0.1";
+const rawBackendPort = Number(process.env.STAR_BACKEND_PORT || 18791);
+const BACKEND_PORT = Number.isFinite(rawBackendPort) && rawBackendPort > 0 ? rawBackendPort : 18791;
+const BACKEND_BASE_URL = `http://${BACKEND_HOST}:${BACKEND_PORT}`;
 
 let mainWindow = null;
 let miniWindow = null;
@@ -38,7 +42,7 @@ function tcpReachable(host, port, timeoutMs = 500) {
 async function waitBackendReady(timeoutMs = 20000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    if (await tcpReachable("127.0.0.1", 18791, 400)) return true;
+    if (await tcpReachable(BACKEND_HOST, BACKEND_PORT, 400)) return true;
     await sleep(200);
   }
   return false;
@@ -108,8 +112,8 @@ function readStateFile(statePath) {
 
 function readStateViaBackend() {
   return new Promise((resolve, reject) => {
-    const req = "GET /status HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n";
-    const socket = net.createConnection({ host: "127.0.0.1", port: 18791 });
+    const req = `GET /status HTTP/1.1\r\nHost: ${BACKEND_HOST}\r\nConnection: close\r\n\r\n`;
+    const socket = net.createConnection({ host: BACKEND_HOST, port: BACKEND_PORT });
     let buf = "";
     socket.setTimeout(1200);
     socket.on("connect", () => socket.write(req));
@@ -215,7 +219,7 @@ async function enterMiniMode(projectRoot) {
 }
 
 async function openFrontendAndQuit() {
-  await shell.openExternal("http://127.0.0.1:18791/");
+  await shell.openExternal(`${BACKEND_BASE_URL}/`);
   app.quit();
 }
 
@@ -232,7 +236,7 @@ function createAssetWindow(projectRoot) {
   const mainBounds = mainWindow && !mainWindow.isDestroyed() ? mainWindow.getBounds() : null;
   const x = mainBounds ? mainBounds.x + 32 : 160;
   const y = mainBounds ? mainBounds.y + 32 : 120;
-  const assetUrl = "http://127.0.0.1:18791/electron-standalone?desktop=1&assetWindow=1";
+  const assetUrl = `${BACKEND_BASE_URL}/electron-standalone?desktop=1&assetWindow=1`;
 
   assetWindow = new BrowserWindow({
     width: 300,
@@ -320,7 +324,7 @@ function createWindows(projectRoot) {
   miniWindow.setTitle("Star Office UI Mini");
 
   const v = Date.now();
-  const mainUrl = `http://127.0.0.1:18791/electron-standalone?desktop=1&v=${v}`;
+  const mainUrl = `${BACKEND_BASE_URL}/electron-standalone?desktop=1&v=${v}`;
   mainWindow.loadURL(mainUrl);
   miniWindow.loadFile(path.join(projectRoot, "desktop-pet", "src", "minimized.html"));
 }
@@ -508,12 +512,12 @@ async function bootstrap() {
   const iconPath = applyAppIcon(projectRoot);
   if (iconPath) console.log(`app icon: ${iconPath}`);
 
-  if (!(await tcpReachable("127.0.0.1", 18791, 400))) {
+  if (!(await tcpReachable(BACKEND_HOST, BACKEND_PORT, 400))) {
     backendChild = spawnBackend(projectRoot);
     const ready = await waitBackendReady(20000);
     if (!ready) console.warn("backend not ready within 20s");
   } else {
-    console.log("backend already running on 127.0.0.1:18791");
+    console.log(`backend already running on ${BACKEND_HOST}:${BACKEND_PORT}`);
   }
 
   registerIpc(projectRoot);
