@@ -1514,6 +1514,13 @@
                     <button onclick="sendEmailDigest()" style="flex:1; background:#6366f1; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">📧 Email</button>
                     <button onclick="showLineOABot()" style="flex:1; background:#22c55e; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">💬 LINE OA</button>
                 </div>
+                <!-- Row 5: Pipeline + Revenue + Workspace + APK -->
+                <div style="display:flex; gap:6px; margin-top:6px;">
+                    <button onclick="runContentPipeline()" style="flex:1; background:linear-gradient(135deg,#f43f5e,#8b5cf6); color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🤖 Pipeline</button>
+                    <button onclick="showRevenueAttribution()" style="flex:1; background:#f59e0b; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">📈 ROI</button>
+                    <button onclick="showWorkspaceManager()" style="flex:1; background:#0891b2; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🏢 Workspace</button>
+                    <button onclick="triggerAPKBuild()" style="flex:1; background:#16a34a; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">📱 APK</button>
+                </div>
             </div>
 
             <!-- Tab: Script -->
@@ -1926,6 +1933,7 @@
                     loadCalendarTasks();
                     // Start Realtime auto-refresh
                     startRealtimeSubscription();
+                    initRealtimeDashboard();
                 } catch(e) {
                     console.error("Supabase Init Error:", e);
                 }
@@ -7607,6 +7615,263 @@ You have access to the team's current data:${context}`;
                 '💡 หรือใช้ CapCut Auto-Edit + Export');
             
             trackEvent('tiktok_autopost', 'content', 'attempt');
+        }
+        
+        // ========================================
+        // 🤖 AI AUTO-CONTENT PIPELINE
+        // ========================================
+        async function runContentPipeline() {
+            const geminiKey = localStorage.getItem('geminiApiKey');
+            if(!geminiKey) { alert('กรุณาใส่ Gemini API Key ใน Settings'); return; }
+            
+            const product = document.getElementById('affiliate-product-input')?.value.trim() || 'สินค้าตัวอย่าง';
+            
+            alert('🤖 AI Content Pipeline\n\n📦 สินค้า: ' + product + '\n\n⏳ กำลังเริ่ม Pipeline...\nStep 1/4: สร้าง Idea...');
+            
+            try {
+                // Step 1: Generate content ideas
+                const ideaRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: 'สร้าง 3 ไอเดียคอนเทนต์ TikTok สำหรับสินค้า "' + product + '" แต่ละไอเดียให้มี: ชื่อ, hook 3 วิ, มุมขาย, hashtag — ภาษาไทย ตอบสั้นกระชับ' }] }] })
+                });
+                const ideaData = await ideaRes.json();
+                const ideas = ideaData.candidates?.[0]?.content?.parts?.[0]?.text || 'ไม่สามารถสร้างได้';
+                
+                // Step 2: Generate full script from best idea  
+                const scriptRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: 'สร้างสคริปต์วิดีโอ TikTok 30 วินาที ภาษาไทย สำหรับ "' + product + '" ให้มี:\n- Hook 3 วินาที\n- เนื้อหาหลัก 20 วินาที\n- CTA 7 วินาที\n- คำแนะนำการถ่าย\n- เพลงแนะนำ' }] }] })
+                });
+                const scriptData = await scriptRes.json();
+                const script = scriptData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                
+                // Step 3: Generate caption + hashtags
+                const captionRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: 'สร้าง caption TikTok ภาษาไทย + hashtag 10 อัน สำหรับ "' + product + '" ให้น่าสนใจ ใช้ emoji เยอะ' }] }] })
+                });
+                const captionData = await captionRes.json();
+                const caption = captionData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                
+                // Save to pipeline history
+                const pipeline = JSON.parse(localStorage.getItem('contentPipeline') || '[]');
+                const entry = {
+                    id: 'pipe_' + Date.now(), product, ideas: ideas.substring(0, 300),
+                    script: script.substring(0, 500), caption: caption.substring(0, 300),
+                    status: 'ready_to_shoot', created_at: new Date().toISOString()
+                };
+                pipeline.push(entry);
+                localStorage.setItem('contentPipeline', JSON.stringify(pipeline));
+                
+                // Step 4: Summary
+                const summary = '🤖 AI Content Pipeline — Complete!\n' + '═'.repeat(30) + '\n\n' +
+                    '📦 สินค้า: ' + product + '\n\n' +
+                    '💡 Step 1 — Ideas:\n' + ideas.substring(0, 250) + '\n\n' +
+                    '📝 Step 2 — Script:\n' + script.substring(0, 300) + '\n\n' +
+                    '✏️ Step 3 — Caption:\n' + caption.substring(0, 200) + '\n\n' +
+                    '📊 Step 4 — Status: พร้อมถ่ายทำ ✅\n' +
+                    '📁 บันทึกใน Pipeline History แล้ว (#' + pipeline.length + ')';
+                
+                alert(summary);
+                sendLineNotification('\n🤖 [Pipeline] สร้าง Content สำเร็จ!\n📦 ' + product + '\n📋 Script + Caption พร้อม\n🎬 รอถ่ายทำ');
+                sendPushNotification('🤖 Content Pipeline', 'สร้าง content สำหรับ ' + product + ' เสร็จแล้ว!');
+                trackEvent('content_pipeline', 'ai', product);
+                
+            } catch(e) { alert('Pipeline Error: ' + e.message); }
+        }
+        
+        function viewPipelineHistory() {
+            const pipeline = JSON.parse(localStorage.getItem('contentPipeline') || '[]');
+            if(pipeline.length === 0) { alert('ยังไม่มี Pipeline History'); return; }
+            
+            let msg = '📁 Content Pipeline History\n' + '═'.repeat(30) + '\n\n';
+            pipeline.slice(-5).forEach((p, i) => {
+                msg += (i+1) + '. ' + p.product + ' [' + p.status + ']\n';
+                msg += '   📅 ' + new Date(p.created_at).toLocaleString('th-TH') + '\n\n';
+            });
+            msg += 'รวม: ' + pipeline.length + ' รายการ';
+            alert(msg);
+        }
+        
+        // ========================================
+        // 📊 REALTIME DASHBOARD (Enhanced Live)
+        // ========================================
+        function initRealtimeDashboard() {
+            if(!supabaseClient) return;
+            
+            // Subscribe to all table changes
+            const channels = ['tasks_calendar', 'product_inventory', 'ads_logs', 'activity_logs'];
+            
+            channels.forEach(table => {
+                supabaseClient.channel('realtime-' + table)
+                    .on('postgres_changes', { event: '*', schema: 'public', table: table }, (payload) => {
+                        console.log('🔴 Realtime:', table, payload.eventType);
+                        
+                        // Update realtime indicator
+                        const dot = document.getElementById('realtime-dot');
+                        const text = document.getElementById('realtime-text');
+                        if(dot) { dot.style.background = '#22c55e'; }
+                        if(text) { text.textContent = 'Live ● ' + table + ' ' + payload.eventType + ' ' + new Date().toLocaleTimeString('th-TH'); }
+                        
+                        // Flash green then back
+                        setTimeout(() => { if(dot) dot.style.background = '#3b82f6'; }, 3000);
+                        
+                        // Auto-refresh dashboard
+                        loadOverviewDashboard();
+                        
+                        // Push notification for important events
+                        if(payload.eventType === 'INSERT') {
+                            if(table === 'tasks_calendar') {
+                                sendPushNotification('📋 งานใหม่!', payload.new?.label || 'New task added');
+                            }
+                            if(table === 'ads_logs' && parseFloat(payload.new?.roas || 0) > 3) {
+                                sendPushNotification('🔥 ROAS สูง!', 'ROAS: ' + payload.new.roas + ' — ' + (payload.new.campaign_name || ''));
+                            }
+                        }
+                    })
+                    .subscribe((status) => {
+                        if(status === 'SUBSCRIBED') {
+                            const dot = document.getElementById('realtime-dot');
+                            const text = document.getElementById('realtime-text');
+                            if(dot) dot.style.background = '#3b82f6';
+                            if(text) text.textContent = 'Live ● เชื่อมต่อ ' + table;
+                        }
+                    });
+            });
+            
+            console.log('📊 Realtime Dashboard initialized for', channels.length, 'tables');
+        }
+        
+        // ========================================
+        // 🏢 MULTI-TENANT WORKSPACE
+        // ========================================
+        function showWorkspaceManager() {
+            const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
+            const active = localStorage.getItem('activeWorkspace') || 'default';
+            
+            let msg = '🏢 Multi-Tenant Workspace\n' + '═'.repeat(30) + '\n\n';
+            msg += '📍 Active: ' + active + '\n\n';
+            
+            if(workspaces.length > 0) {
+                msg += '📋 Workspaces:\n';
+                workspaces.forEach((w, i) => {
+                    const isActive = w.id === active ? ' ← (active)' : '';
+                    msg += '  ' + (i+1) + '. ' + w.name + ' [' + w.company + ']' + isActive + '\n';
+                });
+            } else {
+                msg += '📝 ยังไม่มี workspace เพิ่มเติม\n';
+                msg += '   ระบบใช้ default workspace อยู่\n';
+            }
+            
+            msg += '\n➕ สร้าง workspace ใหม่:\n';
+            msg += '  createWorkspace("ชื่อ", "บริษัท")\n';
+            msg += '\n🔄 สลับ workspace:\n';
+            msg += '  switchWorkspace("workspace_id")\n';
+            
+            alert(msg);
+        }
+        
+        function createWorkspace(name, company) {
+            if(!name) { alert('กรุณาใส่ชื่อ workspace'); return; }
+            const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
+            const ws = {
+                id: 'ws_' + Date.now(), name, company: company || name,
+                created_at: new Date().toISOString(),
+                supabaseUrl: '', supabaseKey: ''
+            };
+            workspaces.push(ws);
+            localStorage.setItem('workspaces', JSON.stringify(workspaces));
+            sendLineNotification('\n🏢 [Workspace] สร้างใหม่\n📋 ' + name + ' (' + company + ')');
+            alert('✅ สร้าง Workspace: ' + name + '\nID: ' + ws.id + '\n\nสลับไปใช้ด้วย switchWorkspace("' + ws.id + '")');
+        }
+        
+        function switchWorkspace(wsId) {
+            const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
+            const ws = workspaces.find(w => w.id === wsId);
+            if(!ws && wsId !== 'default') { alert('ไม่พบ workspace นี้'); return; }
+            
+            localStorage.setItem('activeWorkspace', wsId);
+            if(ws && ws.supabaseUrl && ws.supabaseKey) {
+                localStorage.setItem('supabaseUrl', ws.supabaseUrl);
+                localStorage.setItem('supabaseKey', ws.supabaseKey);
+                initSupabase();
+            }
+            
+            trackEvent('switch_workspace', 'tenant', wsId);
+            alert('✅ สลับไป: ' + (ws ? ws.name : 'Default') + '\n\nDashboard จะรีเฟรชข้อมูลใหม่');
+            loadOverviewDashboard();
+        }
+        
+        // ========================================
+        // 📈 REVENUE ATTRIBUTION
+        // ========================================
+        function showRevenueAttribution() {
+            const attributions = JSON.parse(localStorage.getItem('revenueAttributions') || '[]');
+            
+            let msg = '📈 Revenue Attribution\n' + '═'.repeat(30) + '\n\n';
+            
+            if(attributions.length > 0) {
+                const totalRevenue = attributions.reduce((s, a) => s + (a.revenue || 0), 0);
+                const totalCost = attributions.reduce((s, a) => s + (a.cost || 0), 0);
+                const totalROI = totalCost > 0 ? (((totalRevenue - totalCost) / totalCost) * 100).toFixed(1) : '0';
+                
+                msg += '💰 Total Revenue: ฿' + totalRevenue.toLocaleString() + '\n';
+                msg += '💸 Total Cost: ฿' + totalCost.toLocaleString() + '\n';
+                msg += '📊 Overall ROI: ' + totalROI + '%\n\n';
+                
+                msg += '🏆 Top Performing Content:\n';
+                const sorted = [...attributions].sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+                sorted.slice(0, 5).forEach((a, i) => {
+                    const roi = a.cost > 0 ? (((a.revenue - a.cost) / a.cost) * 100).toFixed(0) : '∞';
+                    msg += '  ' + (i+1) + '. ' + a.content_name + '\n';
+                    msg += '     💵 Revenue: ฿' + (a.revenue || 0).toLocaleString() + ' | Cost: ฿' + (a.cost || 0).toLocaleString() + '\n';
+                    msg += '     📈 ROI: ' + roi + '% | Views: ' + (a.views || 0).toLocaleString() + '\n\n';
+                });
+            } else {
+                msg += '📝 ยังไม่มีข้อมูล attribution\n\n';
+                msg += '➕ เพิ่ม:\n';
+                msg += '  addAttribution("ชื่อ content", revenue, cost, views)\n';
+                msg += '  เช่น addAttribution("รีวิวเซรั่ม EP1", 15000, 3000, 50000)\n';
+            }
+            
+            alert(msg);
+        }
+        
+        function addAttribution(name, revenue, cost, views) {
+            const attributions = JSON.parse(localStorage.getItem('revenueAttributions') || '[]');
+            attributions.push({
+                id: 'attr_' + Date.now(), content_name: name,
+                revenue: revenue || 0, cost: cost || 0, views: views || 0,
+                platform: 'TikTok', created_at: new Date().toISOString()
+            });
+            localStorage.setItem('revenueAttributions', JSON.stringify(attributions));
+            
+            const roi = cost > 0 ? (((revenue - cost) / cost) * 100).toFixed(0) : '∞';
+            sendLineNotification('\n📈 [Attribution] เพิ่ม ROI Tracking\n📹 ' + name + '\n💵 Revenue: ฿' + revenue + ' | Cost: ฿' + cost + '\n📊 ROI: ' + roi + '%');
+            trackConversion(name, revenue);
+            alert('✅ เพิ่ม Attribution: ' + name + '\nROI: ' + roi + '%');
+        }
+        
+        // ========================================
+        // 📱 APK BUILD TRIGGER  
+        // ========================================
+        function triggerAPKBuild() {
+            alert('📱 APK Build Instructions\n' + '═'.repeat(30) + '\n\n' +
+                '🖥️ Windows:\n' +
+                '   ดับเบิลคลิก build-apk.bat\n\n' +
+                '🍎 Mac/Linux:\n' +
+                '   chmod +x build-apk.sh && ./build-apk.sh\n\n' +
+                '📋 Manual Steps:\n' +
+                '1. npm install\n' +
+                '2. npx cap add android\n' +
+                '3. npx cap sync android\n' +
+                '4. npx cap open android\n' +
+                '5. Build > Build APK ใน Android Studio\n\n' +
+                '⚙️ Requirements:\n' +
+                '• Node.js 18+\n' +
+                '• Android Studio + SDK\n' +
+                '• Java JDK 17\n\n' +
+                '📦 Output: android/app/build/outputs/apk/');
         }
 
         async function testTelegramNotify() {
