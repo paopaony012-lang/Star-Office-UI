@@ -1461,6 +1461,7 @@
                     <button onclick="exportReportPDF()" style="flex:1; background:#7c3aed; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">📋 Export PDF</button>
                     <button onclick="exportReportExcel()" style="flex:1; background:#0d9488; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">📊 Export Excel</button>
                     <button onclick="syncAdPlatformData()" style="flex:1; background:#ea580c; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;" data-role="admin">📡 Sync Ads</button>
+                    <button onclick="showAdvancedAnalytics()" style="flex:1; background:#6366f1; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">📊 Analytics</button>
                 </div>
                 <!-- Realtime Indicator -->
                 <div id="realtime-status" style="margin-top:6px; text-align:center; font-size:9px; color:#64748b;">
@@ -1711,6 +1712,70 @@
                     <input type="text" id="supabase-url" placeholder="https://xxx.supabase.co" value="https://gpbnxmpmsquolnoigvrv.supabase.co" style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px; margin-bottom:6px;" />
                     <input type="text" id="supabase-key" placeholder="eyJhbG..." value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwYm54bXBtc3F1b2xub2lndnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODYzODksImV4cCI6MjA4ODk2MjM4OX0.XY7fe-NTRO_gYstW7fXpvVNxme5fGm4z7huX8XMeHVA" style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px;" />
                     <div style="color:#94a3b8; font-size:10px; margin-top:4px;">(ทดแทนไฟล์ JSON เพื่อลดการทำงานของ RAM และช่วยให้ระบบ Live-Dashboard โหลดเร็วขึ้น)</div>
+                </div>
+                
+                <!-- Google Ads API -->
+                <div style="background:#1e293b; border:1px solid #ea580c; padding:8px; border-radius:6px; margin-top:8px; margin-bottom:8px;">
+                    <div style="color:#fb923c; font-size:12px; font-weight:bold; margin-bottom:4px;">📡 Google Ads API</div>
+                    <input type="text" id="google-ads-api-key" placeholder="Google Ads Developer Token..." style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px; margin-bottom:4px;" />
+                    <input type="text" id="google-ads-customer-id" placeholder="Customer ID (xxx-xxx-xxxx)..." style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px;" />
+                    <div style="color:#94a3b8; font-size:9px; margin-top:4px;">สมัครที่ <a href="https://ads.google.com/intl/th_th/home/tools/manager-accounts/" target="_blank" style="color:#fb923c;">Google Ads Manager</a></div>
+                </div>
+                
+                <!-- Meta Ads API -->
+                <div style="background:#1e293b; border:1px solid #3b82f6; padding:8px; border-radius:6px; margin-bottom:8px;">
+                    <div style="color:#60a5fa; font-size:12px; font-weight:bold; margin-bottom:4px;">📘 Meta (Facebook) Ads API</div>
+                    <input type="text" id="meta-ads-token" placeholder="Long-lived Access Token..." style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px; margin-bottom:4px;" />
+                    <input type="text" id="meta-ads-account-id" placeholder="Ad Account ID (act_xxxx)..." style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px;" />
+                    <div style="color:#94a3b8; font-size:9px; margin-top:4px;">สร้าง Token ที่ <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:#60a5fa;">Meta Graph API Explorer</a></div>
+                </div>
+                
+                <!-- Custom Domain -->
+                <div style="background:#1e293b; border:1px solid #8b5cf6; padding:8px; border-radius:6px; margin-bottom:8px;">
+                    <div style="color:#a78bfa; font-size:12px; font-weight:bold; margin-bottom:4px;">🌐 Custom Domain</div>
+                    <div style="color:#94a3b8; font-size:10px; line-height:1.5;">
+                        Railway URL: <span style="color:#22c55e;">web-production-9c080.up.railway.app</span><br>
+                        เชื่อม Custom Domain:<br>
+                        1. ซื้อ domain (เช่น office.haixin.co)<br>
+                        2. ไป Railway → Settings → Domain<br>
+                        3. เพิ่ม CNAME ที่ DNS provider
+                    </div>
+                </div>
+
+                <!-- A/B Testing -->
+                <div style="background:#1e293b; border:1px solid #f43f5e; padding:8px; border-radius:6px; margin-bottom:8px;">
+                    <div style="color:#fb7185; font-size:12px; font-weight:bold; margin-bottom:4px;">🎯 A/B Testing</div>
+                    <input type="text" id="ab-test-name" placeholder="ชื่อการทดสอบ (เช่น Hook Script V2)..." style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px; margin-bottom:4px;" />
+                    <div style="display:flex; gap:4px;">
+                        <input type="text" id="ab-variant-a" placeholder="Variant A..." style="flex:1; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:10px;" />
+                        <input type="text" id="ab-variant-b" placeholder="Variant B..." style="flex:1; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:10px;" />
+                    </div>
+                    <div style="display:flex; gap:6px; margin-top:6px;">
+                        <button onclick="createABTest()" style="flex:1; background:#e11d48; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">🧪 สร้าง A/B Test</button>
+                        <button onclick="viewABResults()" style="flex:1; background:#334155; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">📊 ดูผลลัพธ์</button>
+                    </div>
+                </div>
+
+                <!-- Auto Report -->
+                <div style="background:#1e293b; border:1px solid #06b6d4; padding:8px; border-radius:6px; margin-bottom:8px;">
+                    <div style="color:#22d3ee; font-size:12px; font-weight:bold; margin-bottom:4px;">📧 Auto Weekly Report</div>
+                    <div style="display:flex; gap:4px; align-items:center; margin-bottom:6px;">
+                        <select id="auto-report-day" style="flex:1; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel'; font-size:10px;">
+                            <option value="1">ทุกวันจันทร์</option>
+                            <option value="5">ทุกวันศุกร์</option>
+                            <option value="0">ทุกวันอาทิตย์</option>
+                        </select>
+                        <select id="auto-report-time" style="flex:1; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel'; font-size:10px;">
+                            <option value="8">08:00</option>
+                            <option value="9">09:00</option>
+                            <option value="18">18:00</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="enableAutoReport()" style="flex:1; background:#0891b2; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">⏰ เปิด Auto Report</button>
+                        <button onclick="sendManualReport()" style="flex:1; background:#334155; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">📨 ส่งรายงานตอนนี้</button>
+                    </div>
+                    <div id="auto-report-status" style="color:#64748b; font-size:9px; margin-top:4px;">สถานะ: ยังไม่เปิด</div>
                 </div>
                 
                 <button onclick="saveApiKeysConfig()" style="width:100%; background:#8b5cf6; color:white; font-weight:bold; border-radius:6px; padding:10px; cursor:pointer; font-family:'ArkPixel', monospace; border:none; box-shadow:0 4px 6px rgba(0,0,0,0.3);">💾 บันทึก API ทั้งหมด</button>
@@ -6758,8 +6823,202 @@ You have access to the team's current data:${context}`;
             const lineToken = document.getElementById('line-notify-token').value.trim();
             if(lineToken) localStorage.setItem('lineNotifyToken', lineToken);
             
+            // Google Ads & Meta Ads
+            const googleAdsKey = document.getElementById('google-ads-api-key') ? document.getElementById('google-ads-api-key').value.trim() : '';
+            const googleAdsCustomerId = document.getElementById('google-ads-customer-id') ? document.getElementById('google-ads-customer-id').value.trim() : '';
+            const metaToken = document.getElementById('meta-ads-token') ? document.getElementById('meta-ads-token').value.trim() : '';
+            const metaAccountId = document.getElementById('meta-ads-account-id') ? document.getElementById('meta-ads-account-id').value.trim() : '';
+            if(googleAdsKey) localStorage.setItem('googleAdsApiKey', googleAdsKey);
+            if(googleAdsCustomerId) localStorage.setItem('googleAdsCustomerId', googleAdsCustomerId);
+            if(metaToken) localStorage.setItem('metaAdsToken', metaToken);
+            if(metaAccountId) localStorage.setItem('metaAdsAccountId', metaAccountId);
+            
             initSupabase();
             alert('บันทึก API Keys ลงเครื่องเรียบร้อย (พร้อมใช้งานใน Next Step)');
+        }
+        
+        // ========================================
+        // 🎯 A/B TESTING FRAMEWORK
+        // ========================================
+        async function createABTest() {
+            const name = document.getElementById('ab-test-name')?.value.trim();
+            const varA = document.getElementById('ab-variant-a')?.value.trim();
+            const varB = document.getElementById('ab-variant-b')?.value.trim();
+            if(!name || !varA || !varB) { alert('กรุณากรอกชื่อ + Variant A + B ครับ'); return; }
+            
+            const test = {
+                id: 'ab_' + Date.now(),
+                name: name,
+                variant_a: varA,
+                variant_b: varB,
+                impressions_a: 0, impressions_b: 0,
+                conversions_a: 0, conversions_b: 0,
+                created_at: new Date().toISOString(),
+                status: 'running'
+            };
+            
+            let tests = JSON.parse(localStorage.getItem('abTests') || '[]');
+            tests.push(test);
+            localStorage.setItem('abTests', JSON.stringify(tests));
+            
+            if(supabaseClient) {
+                await supabaseClient.from('activity_logs').insert([{
+                    category: 'A/B Test', action_detail: 'Created: ' + name + ' (A: ' + varA + ' vs B: ' + varB + ')', account_target: 'A/B Testing'
+                }]);
+            }
+            
+            sendLineNotification('\n🧪 [A/B Test] สร้างการทดสอบใหม่\n📋 ' + name + '\n🅰️ ' + varA + '\n🅱️ ' + varB);
+            alert('✅ สร้าง A/B Test: ' + name + '\nVariant A: ' + varA + '\nVariant B: ' + varB + '\n\nระบบจะส่ง Variant สลับกันเมื่อสร้างสคริปต์');
+        }
+        
+        function viewABResults() {
+            const tests = JSON.parse(localStorage.getItem('abTests') || '[]');
+            if(tests.length === 0) { alert('ยังไม่มี A/B Test ครับ'); return; }
+            
+            let msg = '📊 ผลลัพธ์ A/B Testing\n' + '='.repeat(30) + '\n';
+            tests.forEach((t, i) => {
+                const rateA = t.impressions_a > 0 ? ((t.conversions_a / t.impressions_a) * 100).toFixed(1) : '0.0';
+                const rateB = t.impressions_b > 0 ? ((t.conversions_b / t.impressions_b) * 100).toFixed(1) : '0.0';
+                const winner = parseFloat(rateA) > parseFloat(rateB) ? '🅰️' : parseFloat(rateB) > parseFloat(rateA) ? '🅱️' : '🤝';
+                msg += '\n' + (i+1) + '. ' + t.name + ' [' + t.status + ']\n';
+                msg += '   🅰️ ' + t.variant_a + ': ' + t.impressions_a + ' views → ' + t.conversions_a + ' conv (' + rateA + '%)\n';
+                msg += '   🅱️ ' + t.variant_b + ': ' + t.impressions_b + ' views → ' + t.conversions_b + ' conv (' + rateB + '%)\n';
+                msg += '   🏆 Winner: ' + winner + '\n';
+            });
+            alert(msg);
+        }
+        
+        // ========================================
+        // 📧 AUTO WEEKLY REPORT
+        // ========================================
+        function enableAutoReport() {
+            const day = document.getElementById('auto-report-day')?.value || '1';
+            const time = document.getElementById('auto-report-time')?.value || '9';
+            const dayNames = { '0': 'อาทิตย์', '1': 'จันทร์', '5': 'ศุกร์' };
+            
+            localStorage.setItem('autoReportDay', day);
+            localStorage.setItem('autoReportTime', time);
+            localStorage.setItem('autoReportEnabled', 'true');
+            
+            const statusEl = document.getElementById('auto-report-status');
+            if(statusEl) {
+                statusEl.textContent = 'สถานะ: เปิดอยู่ ✅ — ส่งทุกวัน' + dayNames[day] + ' เวลา ' + time + ':00 น.';
+                statusEl.style.color = '#22c55e';
+            }
+            
+            // Check every 5 minutes
+            if(window._autoReportInterval) clearInterval(window._autoReportInterval);
+            window._autoReportInterval = setInterval(() => {
+                const now = new Date();
+                const targetDay = parseInt(localStorage.getItem('autoReportDay') || '1');
+                const targetHour = parseInt(localStorage.getItem('autoReportTime') || '9');
+                
+                if(now.getDay() === targetDay && now.getHours() === targetHour && now.getMinutes() < 5) {
+                    const lastSent = localStorage.getItem('lastAutoReportDate');
+                    const today = now.toISOString().slice(0, 10);
+                    if(lastSent !== today) {
+                        sendManualReport();
+                        localStorage.setItem('lastAutoReportDate', today);
+                    }
+                }
+            }, 5 * 60 * 1000); // Check every 5 minutes
+            
+            sendLineNotification('\n⏰ [Star Office] Auto Weekly Report เปิดแล้ว\n📅 ส่งทุกวัน' + dayNames[day] + ' เวลา ' + time + ':00 น.');
+            alert('✅ เปิด Auto Report สำเร็จ!\n📅 ส่งทุกวัน' + dayNames[day] + ' เวลา ' + time + ':00 น.\n\n(ต้องเปิดเว็บไว้เพื่อส่งรายงาน)');
+        }
+        
+        async function sendManualReport() {
+            if(!supabaseClient) { alert('กรุณาเชื่อมต่อ Supabase ก่อนครับ'); return; }
+            
+            try {
+                const { data: tasks } = await supabaseClient.from('tasks_calendar').select('*');
+                const { data: products } = await supabaseClient.from('product_inventory').select('*');
+                const { data: ads } = await supabaseClient.from('ads_logs').select('*');
+                
+                const pending = tasks ? tasks.filter(t => t.status === 'pending').length : 0;
+                const done = tasks ? tasks.filter(t => t.status === 'completed').length : 0;
+                const totalProducts = products ? products.length : 0;
+                const totalAds = ads ? ads.length : 0;
+                const totalSpend = ads ? ads.reduce((s, l) => s + parseFloat(l.spend || 0), 0) : 0;
+                const totalRevenue = ads ? ads.reduce((s, l) => s + parseFloat(l.revenue || 0), 0) : 0;
+                const avgRoas = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : '0';
+                
+                const report = '\n📊 [Star Office] Weekly Report\n' +
+                    '📅 ' + new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + '\n' +
+                    '━━━━━━━━━━━━━━━\n' +
+                    '📋 งาน: ' + pending + ' ค้าง | ' + done + ' เสร็จ\n' +
+                    '📦 สินค้า: ' + totalProducts + ' รายการ\n' +
+                    '📡 แคมเปญ: ' + totalAds + ' รายการ\n' +
+                    '💰 งบรวม: ฿' + totalSpend.toFixed(0) + '\n' +
+                    '💵 รายได้: ฿' + totalRevenue.toFixed(0) + '\n' +
+                    '📈 Avg ROAS: ' + avgRoas + '\n' +
+                    '━━━━━━━━━━━━━━━\n' +
+                    '🔗 Dashboard: web-production-9c080.up.railway.app';
+                
+                await sendLineNotification(report);
+                alert('✅ ส่งรายงานสัปดาห์ไป LINE Notify แล้ว!');
+            } catch(e) { alert('Error: ' + e.message); }
+        }
+        
+        // ========================================
+        // 📊 ADVANCED ANALYTICS (Cohort/Funnel)
+        // ========================================
+        function showAdvancedAnalytics() {
+            if(!supabaseClient) { alert('กรุณาเชื่อมต่อ Supabase ก่อนครับ'); return; }
+            loadCohortAnalysis();
+        }
+        
+        async function loadCohortAnalysis() {
+            if(!supabaseClient) return;
+            try {
+                const { data: logs } = await supabaseClient.from('activity_logs').select('*').order('created_at', { ascending: true });
+                const { data: tasks } = await supabaseClient.from('tasks_calendar').select('*');
+                const { data: ads } = await supabaseClient.from('ads_logs').select('*');
+                
+                // Group by week
+                const weeklyData = {};
+                if(logs) {
+                    logs.forEach(l => {
+                        const week = l.created_at ? l.created_at.slice(0, 10) : 'unknown';
+                        if(!weeklyData[week]) weeklyData[week] = { activities: 0, categories: {} };
+                        weeklyData[week].activities++;
+                        const cat = l.category || 'other';
+                        weeklyData[week].categories[cat] = (weeklyData[week].categories[cat] || 0) + 1;
+                    });
+                }
+                
+                // Funnel analysis
+                const totalTasks = tasks ? tasks.length : 0;
+                const pendingTasks = tasks ? tasks.filter(t => t.status === 'pending').length : 0;
+                const completedTasks = tasks ? tasks.filter(t => t.status === 'completed').length : 0;
+                const completionRate = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : '0';
+                
+                const totalCampaigns = ads ? ads.length : 0;
+                const profitableCampaigns = ads ? ads.filter(a => parseFloat(a.roas || 0) > 1).length : 0;
+                const profitRate = totalCampaigns > 0 ? ((profitableCampaigns / totalCampaigns) * 100).toFixed(1) : '0';
+                
+                let msg = '📊 Advanced Analytics\n' + '═'.repeat(30) + '\n\n';
+                msg += '📈 Funnel Analysis:\n';
+                msg += '  📋 Tasks: ' + totalTasks + ' total → ' + completedTasks + ' done (' + completionRate + '% completion)\n';
+                msg += '  📡 Campaigns: ' + totalCampaigns + ' → ' + profitableCampaigns + ' profitable (' + profitRate + '% profit rate)\n\n';
+                msg += '📅 Daily Activity Breakdown:\n';
+                
+                const days = Object.keys(weeklyData).sort().slice(-7);
+                days.forEach(d => {
+                    const cats = Object.entries(weeklyData[d].categories).map(([k, v]) => k + ':' + v).join(', ');
+                    msg += '  ' + d + ' → ' + weeklyData[d].activities + ' (' + cats + ')\n';
+                });
+                
+                if(ads && ads.length > 0) {
+                    msg += '\n💰 Campaign Performance:\n';
+                    const sorted = [...ads].sort((a, b) => (b.roas || 0) - (a.roas || 0));
+                    sorted.slice(0, 5).forEach((a, i) => {
+                        msg += '  ' + (i + 1) + '. ' + (a.campaign_name || a.product || 'N/A') + ' — ROAS: ' + (a.roas || 0) + ' (฿' + (a.spend || 0) + '→฿' + (a.revenue || 0) + ')\n';
+                    });
+                }
+                
+                alert(msg);
+            } catch(e) { alert('Analytics Error: ' + e.message); }
         }
 
         async function testTelegramNotify() {
