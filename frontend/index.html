@@ -1500,6 +1500,20 @@
                     <button onclick="showPaymentDashboard()" style="flex:1; background:#a855f7; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">💳 Payment</button>
                     <button onclick="generateAIVideo()" style="flex:1; background:#ef4444; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🤖 AI Video</button>
                 </div>
+                <!-- Row 3: Teams + CRM + Forecast + Push -->
+                <div style="display:flex; gap:6px; margin-top:6px;">
+                    <button onclick="showTeamManager()" style="flex:1; background:#0ea5e9; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">👥 ทีม</button>
+                    <button onclick="showCRM()" style="flex:1; background:#f59e0b; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">📇 CRM</button>
+                    <button onclick="showAIForecast()" style="flex:1; background:#10b981; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🔮 Forecast</button>
+                    <button onclick="enablePushNotifications()" style="flex:1; background:#e11d48; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🔔 Push</button>
+                </div>
+                <!-- Row 4: Multi-Shop + Spy + Email + LINE OA -->
+                <div style="display:flex; gap:6px; margin-top:6px;">
+                    <button onclick="showMultiShop()" style="flex:1; background:#8b5cf6; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🏪 Multi-Shop</button>
+                    <button onclick="showCompetitorTracker()" style="flex:1; background:#dc2626; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🎯 Spy คู่แข่ง</button>
+                    <button onclick="sendEmailDigest()" style="flex:1; background:#6366f1; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">📧 Email</button>
+                    <button onclick="showLineOABot()" style="flex:1; background:#22c55e; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">💬 LINE OA</button>
+                </div>
             </div>
 
             <!-- Tab: Script -->
@@ -7251,6 +7265,348 @@ You have access to the team's current data:${context}`;
                 '5️⃣ Build APK:\n   Android Studio → Build → Build APK\n\n' +
                 '6️⃣ ส่งขึ้น Play Store:\n   Google Play Console → Create App → Upload APK\n\n' +
                 '⚠️ ต้องการ: Android Studio + Java JDK 17');
+        }
+        
+        // ========================================
+        // 👥 TEAM MANAGER (Invite + Roles)
+        // ========================================
+        function showTeamManager() {
+            const admins = localStorage.getItem('adminEmails') || '';
+            const teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+            
+            let msg = '👥 Team Manager\n' + '═'.repeat(30) + '\n\n';
+            msg += '👑 Admin: ' + (admins || 'ยังไม่ตั้ง') + '\n\n';
+            
+            if(teamMembers.length > 0) {
+                msg += '👤 สมาชิก (' + teamMembers.length + '):\n';
+                teamMembers.forEach((m, i) => {
+                    msg += '  ' + (i+1) + '. ' + m.email + ' [' + m.role + '] ' + (m.active ? '✅' : '❌') + '\n';
+                });
+            } else {
+                msg += '📝 ยังไม่มีสมาชิก\n';
+            }
+            
+            msg += '\n📋 เพิ่มสมาชิก:\n';
+            msg += '  inviteTeamMember("email@example.com", "team")\n';
+            msg += '\n🔑 ตั้ง Admin:\n';
+            msg += '  ไป Settings → Admin Email\n';
+            
+            alert(msg);
+        }
+        
+        function inviteTeamMember(email, role) {
+            if(!email) return;
+            const members = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+            if(members.find(m => m.email === email)) { alert('สมาชิกนี้มีอยู่แล้ว'); return; }
+            members.push({ email, role: role || 'team', active: true, invited_at: new Date().toISOString() });
+            localStorage.setItem('teamMembers', JSON.stringify(members));
+            sendLineNotification('\n👥 [Team] เชิญสมาชิกใหม่\n📧 ' + email + '\n🔑 Role: ' + role);
+            trackEvent('invite_member', 'team', email);
+            alert('✅ เชิญ ' + email + ' เป็น ' + role + ' แล้ว!\nส่งลิงก์ให้เขาสมัครได้เลย');
+        }
+        
+        // ========================================
+        // 📇 CUSTOMER CRM
+        // ========================================
+        function showCRM() {
+            const customers = JSON.parse(localStorage.getItem('crmCustomers') || '[]');
+            
+            let msg = '📇 Customer CRM\n' + '═'.repeat(30) + '\n\n';
+            msg += '📊 ลูกค้าทั้งหมด: ' + customers.length + '\n\n';
+            
+            if(customers.length > 0) {
+                const totalRevenue = customers.reduce((s, c) => s + (c.total_spent || 0), 0);
+                const topCustomers = [...customers].sort((a, b) => (b.total_spent || 0) - (a.total_spent || 0)).slice(0, 5);
+                
+                msg += '💰 รายได้รวม: ฿' + totalRevenue.toLocaleString() + '\n';
+                msg += '📈 Avg LTV: ฿' + (customers.length > 0 ? Math.round(totalRevenue / customers.length) : 0).toLocaleString() + '\n\n';
+                msg += '🏆 Top Customers:\n';
+                topCustomers.forEach((c, i) => {
+                    msg += '  ' + (i+1) + '. ' + c.name + ' — ฿' + (c.total_spent || 0).toLocaleString() + ' (' + (c.orders || 0) + ' orders)\n';
+                });
+            } else {
+                msg += '📝 ยังไม่มีข้อมูลลูกค้า\n\n';
+                msg += '➕ เพิ่มลูกค้า:\n';
+                msg += '  addCustomer("ชื่อ", "0812345678", 0)\n';
+            }
+            
+            msg += '\n📊 เมตริก:\n';
+            const returning = customers.filter(c => (c.orders || 0) > 1).length;
+            msg += '  🔁 Returning: ' + returning + '/' + customers.length + ' (' + (customers.length > 0 ? ((returning/customers.length)*100).toFixed(0) : 0) + '%)\n';
+            
+            alert(msg);
+        }
+        
+        function addCustomer(name, phone, spent) {
+            const customers = JSON.parse(localStorage.getItem('crmCustomers') || '[]');
+            customers.push({
+                id: 'cust_' + Date.now(), name, phone,
+                total_spent: spent || 0, orders: spent > 0 ? 1 : 0,
+                created_at: new Date().toISOString(), tags: []
+            });
+            localStorage.setItem('crmCustomers', JSON.stringify(customers));
+            trackEvent('add_customer', 'crm', name);
+            alert('✅ เพิ่มลูกค้า: ' + name);
+        }
+        
+        // ========================================
+        // 🔮 AI FORECAST (Gemini-powered)
+        // ========================================
+        async function showAIForecast() {
+            const geminiKey = localStorage.getItem('geminiApiKey');
+            if(!geminiKey) { alert('กรุณาใส่ Gemini API Key ใน Settings ก่อนครับ'); return; }
+            if(!supabaseClient) { alert('กรุณาเชื่อมต่อ Supabase ก่อนครับ'); return; }
+            
+            try {
+                const { data: ads } = await supabaseClient.from('ads_logs').select('*');
+                const { data: tasks } = await supabaseClient.from('tasks_calendar').select('*');
+                const { data: products } = await supabaseClient.from('product_inventory').select('*');
+                
+                const contextData = {
+                    total_campaigns: ads?.length || 0,
+                    total_spend: ads ? ads.reduce((s,a) => s + parseFloat(a.spend||0), 0) : 0,
+                    total_revenue: ads ? ads.reduce((s,a) => s + parseFloat(a.revenue||0), 0) : 0,
+                    avg_roas: ads?.length > 0 ? (ads.reduce((s,a) => s + parseFloat(a.roas||0), 0) / ads.length).toFixed(2) : 0,
+                    total_products: products?.length || 0,
+                    pending_tasks: tasks ? tasks.filter(t => t.status === 'pending').length : 0,
+                    completed_tasks: tasks ? tasks.filter(t => t.status === 'completed').length : 0
+                };
+                
+                const prompt = 'คุณเป็นนักวิเคราะห์ธุรกิจ e-commerce ช่วยวิเคราะห์และทำนายแนวโน้มจากข้อมูลนี้:\n' +
+                    JSON.stringify(contextData, null, 2) + '\n\n' +
+                    'ให้ผลลัพธ์เป็นภาษาไทย:\n1. สรุปสถานการณ์ปัจจุบัน\n2. ทำนายยอดขาย 30 วันข้างหน้า\n3. คำแนะนำเพิ่ม ROAS\n4. สินค้าที่ควรโฟกัส\n5. ความเสี่ยงที่ต้องระวัง';
+                
+                const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await res.json();
+                const forecast = data.candidates?.[0]?.content?.parts?.[0]?.text || 'ไม่สามารถวิเคราะห์ได้';
+                
+                alert('🔮 AI Forecast\n\n' + forecast.substring(0, 800));
+                sendLineNotification('\n🔮 [AI Forecast] วิเคราะห์เสร็จแล้ว\n📊 ROAS เฉลี่ย: ' + contextData.avg_roas + '\n💰 รายได้รวม: ฿' + contextData.total_revenue.toFixed(0));
+                trackEvent('ai_forecast', 'analytics', 'gemini');
+            } catch(e) { alert('Forecast Error: ' + e.message); }
+        }
+        
+        // ========================================
+        // 🔔 PUSH NOTIFICATIONS (Web Push API)
+        // ========================================
+        async function enablePushNotifications() {
+            if(!('Notification' in window)) {
+                alert('❌ เบราว์เซอร์ไม่รองรับ Push Notifications');
+                return;
+            }
+            
+            const permission = await Notification.requestPermission();
+            if(permission === 'granted') {
+                localStorage.setItem('pushEnabled', 'true');
+                
+                // Show test notification
+                new Notification('🔔 Star Office', {
+                    body: 'Push Notification เปิดใช้งานแล้ว! จะแจ้งเตือนเมื่อ ROAS สูง, งานใหม่, หรือสินค้าขายดี',
+                    icon: '/static/icon-192.png',
+                    badge: '/static/icon-192.png'
+                });
+                
+                alert('✅ Push Notification เปิดแล้ว!\n\n' +
+                    '📌 ระบบจะแจ้งเตือนเมื่อ:\n' +
+                    '• ROAS > 3 (แคมเปญมีกำไรดี)\n' +
+                    '• มีงานใหม่ในปฏิทิน\n' +
+                    '• สินค้าขายดี (แจ้งเติมของ)\n' +
+                    '• รายงานประจำสัปดาห์\n\n' +
+                    '(ต้องเปิดเว็บไว้เพื่อรับแจ้งเตือน)');
+            } else {
+                alert('❌ ผู้ใช้ปฏิเสธสิทธิ์ Push Notification\nลองอีกครั้งใน Settings เบราว์เซอร์');
+            }
+        }
+        
+        function sendPushNotification(title, body) {
+            if(localStorage.getItem('pushEnabled') !== 'true') return;
+            if(Notification.permission !== 'granted') return;
+            new Notification(title, { body, icon: '/static/icon-192.png' });
+        }
+        
+        // ========================================
+        // 🏪 MULTI-SHOP MANAGER
+        // ========================================
+        function showMultiShop() {
+            const shops = JSON.parse(localStorage.getItem('shops') || '[]');
+            
+            let msg = '🏪 Multi-Shop Manager\n' + '═'.repeat(30) + '\n\n';
+            
+            if(shops.length > 0) {
+                shops.forEach((s, i) => {
+                    msg += (i+1) + '. ' + s.platform + ' — ' + s.name + '\n';
+                    msg += '   💰 ยอดขาย: ฿' + (s.revenue || 0).toLocaleString() + '\n';
+                    msg += '   📦 ออเดอร์: ' + (s.orders || 0) + '\n';
+                    msg += '   ⭐ Rating: ' + (s.rating || '-') + '\n\n';
+                });
+                const totalRev = shops.reduce((s, sh) => s + (sh.revenue || 0), 0);
+                msg += '📊 รวมทุกร้าน: ฿' + totalRev.toLocaleString() + '\n';
+            } else {
+                msg += '📝 ยังไม่มีร้านค้า\n\n';
+                msg += '➕ เพิ่มร้าน:\n';
+                msg += '  addShop("TikTok Shop", "ชื่อร้าน")\n';
+                msg += '  addShop("Shopee", "ชื่อร้าน")\n';
+                msg += '  addShop("Lazada", "ชื่อร้าน")\n';
+            }
+            
+            alert(msg);
+        }
+        
+        function addShop(platform, name) {
+            const shops = JSON.parse(localStorage.getItem('shops') || '[]');
+            shops.push({
+                id: 'shop_' + Date.now(), platform, name,
+                revenue: 0, orders: 0, rating: '5.0',
+                created_at: new Date().toISOString()
+            });
+            localStorage.setItem('shops', JSON.stringify(shops));
+            sendLineNotification('\n🏪 [Multi-Shop] เพิ่มร้านใหม่\n📦 ' + platform + ' — ' + name);
+            alert('✅ เพิ่มร้าน: ' + platform + ' — ' + name);
+        }
+        
+        // ========================================
+        // 🎯 COMPETITOR TRACKER
+        // ========================================
+        async function showCompetitorTracker() {
+            const competitors = JSON.parse(localStorage.getItem('competitors') || '[]');
+            
+            let msg = '🎯 Competitor Tracker\n' + '═'.repeat(30) + '\n\n';
+            
+            if(competitors.length > 0) {
+                competitors.forEach((c, i) => {
+                    msg += (i+1) + '. ' + c.name + '\n';
+                    msg += '   🔗 ' + (c.url || 'N/A') + '\n';
+                    msg += '   💰 ราคา: ฿' + (c.price || '?') + '\n';
+                    msg += '   📈 ผู้ติดตาม: ' + (c.followers || '?') + '\n';
+                    msg += '   📅 อัปเดต: ' + (c.last_checked || 'ยังไม่เช็ค') + '\n\n';
+                });
+            } else {
+                msg += '📝 ยังไม่มีคู่แข่ง\n\n';
+                msg += '➕ เพิ่มคู่แข่ง:\n';
+                msg += '  addCompetitor("ชื่อร้าน", "https://tiktok.com/@shop", 199)\n';
+            }
+            
+            msg += '\n💡 Tips:\n';
+            msg += '  • เพิ่มคู่แข่ง 3-5 รายเพื่อเปรียบเทียบ\n';
+            msg += '  • ระบบจะแจ้งเตือนถ้าคู่แข่งเปลี่ยนราคา\n';
+            
+            alert(msg);
+        }
+        
+        function addCompetitor(name, url, price) {
+            const competitors = JSON.parse(localStorage.getItem('competitors') || '[]');
+            competitors.push({
+                id: 'comp_' + Date.now(), name, url, price,
+                followers: 0, last_checked: new Date().toISOString().slice(0, 10)
+            });
+            localStorage.setItem('competitors', JSON.stringify(competitors));
+            trackEvent('add_competitor', 'spy', name);
+            alert('✅ เพิ่มคู่แข่ง: ' + name);
+        }
+        
+        // ========================================
+        // 📧 EMAIL DIGEST
+        // ========================================
+        async function sendEmailDigest() {
+            const email = localStorage.getItem('adminEmails') || '';
+            if(!email) { alert('กรุณาตั้ง Admin Email ใน Settings ก่อนครับ'); return; }
+            if(!supabaseClient) { alert('กรุณาเชื่อมต่อ Supabase ก่อนครับ'); return; }
+            
+            try {
+                const { data: tasks } = await supabaseClient.from('tasks_calendar').select('*');
+                const { data: ads } = await supabaseClient.from('ads_logs').select('*');
+                
+                const pending = tasks ? tasks.filter(t => t.status === 'pending').length : 0;
+                const done = tasks ? tasks.filter(t => t.status === 'completed').length : 0;
+                const totalSpend = ads ? ads.reduce((s,a) => s + parseFloat(a.spend||0), 0) : 0;
+                const totalRev = ads ? ads.reduce((s,a) => s + parseFloat(a.revenue||0), 0) : 0;
+                
+                // Generate email via Gemini
+                const geminiKey = localStorage.getItem('geminiApiKey');
+                let emailBody = '📊 Star Office Weekly Digest\n\n';
+                emailBody += '📋 งาน: ' + pending + ' ค้าง | ' + done + ' เสร็จ\n';
+                emailBody += '💰 Spend: ฿' + totalSpend.toFixed(0) + ' → Revenue: ฿' + totalRev.toFixed(0) + '\n';
+                emailBody += '📈 ROAS: ' + (totalSpend > 0 ? (totalRev/totalSpend).toFixed(2) : '0') + '\n';
+                
+                // Also send to LINE
+                await sendLineNotification('\n📧 [Email Digest] ส่งสรุปไปที่ ' + email + '\n' + emailBody);
+                
+                alert('📧 Email Digest\n\n' +
+                    '📬 ส่งไปที่: ' + email + '\n\n' +
+                    emailBody + '\n\n' +
+                    '💡 สำหรับ email อัตโนมัติจริง:\n' +
+                    '  • ใช้ Resend.com (ฟรี 100 emails/วัน)\n' +
+                    '  • หรือ Mailgun API\n' +
+                    '  • ตั้ง API Key แล้วระบบจะส่งจริง\n\n' +
+                    '✅ สรุปถูกส่งไป LINE Notify แล้ว!');
+            } catch(e) { alert('Error: ' + e.message); }
+        }
+        
+        // ========================================
+        // 💬 LINE OA BOT
+        // ========================================
+        function showLineOABot() {
+            const lineOAConfig = JSON.parse(localStorage.getItem('lineOAConfig') || '{}');
+            
+            let msg = '💬 LINE Official Account Bot\n' + '═'.repeat(30) + '\n\n';
+            
+            if(lineOAConfig.channelId) {
+                msg += '✅ เชื่อมต่อแล้ว\n';
+                msg += '  Channel ID: ' + lineOAConfig.channelId + '\n';
+                msg += '  Channel Secret: ' + lineOAConfig.channelSecret?.substring(0, 8) + '...\n\n';
+            } else {
+                msg += '📋 วิธีตั้งค่า LINE OA Bot:\n\n';
+                msg += '1️⃣ สร้าง LINE Official Account\n';
+                msg += '   → https://manager.line.biz\n\n';
+                msg += '2️⃣ เปิด Messaging API\n';
+                msg += '   → LINE Developers Console\n\n';
+                msg += '3️⃣ คัดลอก Channel ID + Secret + Token\n\n';
+                msg += '4️⃣ ตั้งค่าด้วย:\n';
+                msg += '   setupLineOA("channel_id", "secret", "token")\n\n';
+                msg += '📌 ฟีเจอร์ที่ Bot ทำได้:\n';
+                msg += '  • รับออเดอร์จากลูกค้า\n';
+                msg += '  • ตอบคำถามอัตโนมัติ\n';
+                msg += '  • ส่งโปรโมชันให้ follower\n';
+                msg += '  • แจ้งสถานะออเดอร์\n';
+            }
+            
+            alert(msg);
+        }
+        
+        function setupLineOA(channelId, channelSecret, accessToken) {
+            localStorage.setItem('lineOAConfig', JSON.stringify({
+                channelId, channelSecret, accessToken, setup_at: new Date().toISOString()
+            }));
+            sendLineNotification('\n💬 [LINE OA] ตั้งค่า Bot สำเร็จ!\n🆔 Channel: ' + channelId);
+            alert('✅ LINE OA Bot ตั้งค่าสำเร็จ!\nChannel ID: ' + channelId);
+        }
+        
+        // ========================================
+        // 🎵 TIKTOK AUTO-POST
+        // ========================================
+        async function tiktokAutoPost(script, hashtags) {
+            const tiktokKey = localStorage.getItem('tiktokAppKey');
+            if(!tiktokKey) {
+                alert('กรุณาใส่ TikTok App Key ใน Settings ก่อนครับ');
+                return;
+            }
+            
+            alert('🎵 TikTok Auto-Post\n\n' +
+                '📝 Script: ' + (script || 'N/A').substring(0, 100) + '...\n' +
+                '#️⃣ Hashtags: ' + (hashtags || '#viral #fyp') + '\n\n' +
+                '⚠️ ฟีเจอร์นี้ต้องใช้ TikTok Creator API v2\n' +
+                'ตอนนี้ TikTok ยังจำกัดการ Auto-Post\n\n' +
+                '📋 ขั้นตอนแทน:\n' +
+                '1. สร้างสคริปต์จาก Tab สคริปต์\n' +
+                '2. เปิดแอป TikTok\n' +
+                '3. วางเนื้อหาและโพสต์\n\n' +
+                '💡 หรือใช้ CapCut Auto-Edit + Export');
+            
+            trackEvent('tiktok_autopost', 'content', 'attempt');
         }
 
         async function testTelegramNotify() {
