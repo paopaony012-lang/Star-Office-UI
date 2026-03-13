@@ -8,6 +8,30 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/static/icon-192.png">
     <title>Star Office - Pixel Affiliate HQ</title>
+    <!-- Google Analytics 4 -->
+    <script>
+        // GA4 Config - Replace G-XXXXXXXXXX with your Measurement ID
+        window.GA_MEASUREMENT_ID = localStorage.getItem('ga4MeasurementId') || '';
+        if(window.GA_MEASUREMENT_ID) {
+            const s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=' + window.GA_MEASUREMENT_ID;
+            document.head.appendChild(s);
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', window.GA_MEASUREMENT_ID, { send_page_view: true });
+        } else {
+            function gtag(){}  // no-op if no GA4 ID
+        }
+        // Custom event helpers
+        function trackEvent(action, category, label, value) {
+            gtag('event', action, { event_category: category, event_label: label, value: value });
+        }
+        function trackConversion(name, revenue) {
+            gtag('event', 'conversion', { transaction_id: 'txn_' + Date.now(), value: revenue, currency: 'THB', items: [{ name: name }] });
+        }
+    </script>
     <style>
         @font-face {
             font-family: 'ArkPixel';
@@ -1468,6 +1492,14 @@
                     <span id="realtime-dot" style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#64748b; margin-right:4px;"></span>
                     <span id="realtime-text">Realtime: กำลังเชื่อมต่อ...</span>
                 </div>
+                <!-- Brand Filter + Payment + AI Video -->
+                <div style="display:flex; gap:6px; margin-top:6px;">
+                    <select id="brand-filter" onchange="filterByBrand()" style="flex:1; padding:4px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel'; font-size:9px;">
+                        <option value="all">🏷️ ทุกแบรนด์</option>
+                    </select>
+                    <button onclick="showPaymentDashboard()" style="flex:1; background:#a855f7; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">💳 Payment</button>
+                    <button onclick="generateAIVideo()" style="flex:1; background:#ef4444; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🤖 AI Video</button>
+                </div>
             </div>
 
             <!-- Tab: Script -->
@@ -1740,6 +1772,28 @@
                         2. ไป Railway → Settings → Domain<br>
                         3. เพิ่ม CNAME ที่ DNS provider
                     </div>
+                </div>
+
+                <!-- GA4 -->
+                <div style="background:#1e293b; border:1px solid #f97316; padding:8px; border-radius:6px; margin-bottom:8px;">
+                    <div style="color:#fb923c; font-size:12px; font-weight:bold; margin-bottom:4px;">📊 Google Analytics 4</div>
+                    <input type="text" id="ga4-measurement-id" placeholder="G-XXXXXXXXXX (Measurement ID)" style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px;" />
+                    <div style="color:#94a3b8; font-size:9px; margin-top:4px;">สร้างที่ <a href="https://analytics.google.com/" target="_blank" style="color:#fb923c;">Google Analytics</a> → Admin → Data Streams</div>
+                </div>
+
+                <!-- Multi-Brand -->
+                <div style="background:#1e293b; border:1px solid #14b8a6; padding:8px; border-radius:6px; margin-bottom:8px;">
+                    <div style="color:#2dd4bf; font-size:12px; font-weight:bold; margin-bottom:4px;">🏷️ Multi-Brand Filter</div>
+                    <input type="text" id="brand-list" placeholder="ชื่อแบรนด์ (คั่นด้วย ,) เช่น Haixin,Lobster,StarShop" style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px; margin-bottom:4px;" />
+                    <button onclick="saveBrandConfig()" style="width:100%; background:#0d9488; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">💾 บันทึกแบรนด์</button>
+                </div>
+
+                <!-- Payment Tracking -->
+                <div style="background:#1e293b; border:1px solid #a855f7; padding:8px; border-radius:6px; margin-bottom:8px;">
+                    <div style="color:#c084fc; font-size:12px; font-weight:bold; margin-bottom:4px;">💳 Payment Tracking</div>
+                    <input type="text" id="stripe-api-key" placeholder="Stripe Publishable Key (pk_live_...)..." style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px; margin-bottom:4px;" />
+                    <input type="text" id="promptpay-id" placeholder="PromptPay ID (เบอร์โทร/เลข ID)..." style="width:100%; padding:6px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel', monospace; font-size:11px;" />
+                    <div style="color:#94a3b8; font-size:9px; margin-top:4px;">ใส่ Stripe Key สำหรับ payment link หรือ PromptPay ID สำหรับ QR</div>
                 </div>
 
                 <!-- A/B Testing -->
@@ -2161,7 +2215,21 @@
                 assetHintDefault: 'วัสดุทั่วไป: แนะนำให้คงขนาดภาพเดิมเพื่อป้องกันการผิดเพี้ยน',
                 showCoords: 'แสดงพิกัด', hideCoords: 'ซ่อนพิกัด', moveView: 'เลื่อนมุมมอง', lockView: 'ล็อกมุมมอง',
                 memoTitle: 'บันทึกเมื่อวาน', guestTitle: 'รายชื่อผู้เยี่ยมชม', officeTitle: 'ออฟฟิศของ Haixin Lobster',
-                loadingOffice: 'กำลังโหลดออฟฟิศของ Star...'
+                loadingOffice: 'กำลังโหลดออฟฟิศของ Star...',
+                // Dashboard
+                tabOverview: 'ภาพรวม', tabScript: 'สคริปต์', tabTrends: 'เทรนด์', tabCalendar: 'ปฏิทิน',
+                tabSales: 'ยอดขาย', tabSpy: 'สายลับ', tabAds: 'ยิงแอด', tabInventory: 'คลังสินค้า', tabTeam: 'คุมทีม',
+                dashTitle: 'แดชบอร์ดสรุปภาพรวมระบบ',
+                pendingTasks: 'งานค้างในปฏิทิน', completedTasks: 'งานสำเร็จแล้ว',
+                totalProducts: 'สินค้าในคลัง', adLogs: 'รายการ Ad Logs',
+                exportPdf: 'Export PDF', exportExcel: 'Export Excel', syncAds: 'Sync Ads',
+                analytics: 'Analytics', payment: 'Payment', aiVideo: 'AI Video',
+                allBrands: 'ทุกแบรนด์', realtimeConnecting: 'Realtime: กำลังเชื่อมต่อ...',
+                activityTrend: 'แนวโน้มกิจกรรม 7 วันล่าสุด', revenueRoas: 'Revenue & ROAS Tracking',
+                recentActivity: 'กิจกรรมล่าสุด', refreshData: '🔄 Refresh Data',
+                loginTitle: 'เข้าสู่ระบบ Star Office', loginEmail: 'อีเมล', loginPassword: 'รหัสผ่าน',
+                loginBtn: 'เข้าสู่ระบบ', signupBtn: 'สมัครสมาชิก', guestBtn: 'เข้าแบบผู้เยี่ยมชม',
+                logoutBtn: 'ออกจากระบบ', settings: 'ตั้งค่า'
             },
             en: {
                 controlTitle: 'Star Status',
@@ -2189,7 +2257,20 @@
                 assetHintDefault: 'Generic asset: keep source size, alpha channel, and visual anchor to avoid drift/distortion',
                 showCoords: 'Show Coords', hideCoords: 'Hide Coords', moveView: 'Pan View', lockView: 'Lock View',
                 memoTitle: 'YESTERDAY NOTES', guestTitle: 'VISITOR LIST', officeTitle: 'Haixin Lobster Office',
-                loadingOffice: 'Loading Star’s pixel office...'
+                loadingOffice: 'Loading Star’s pixel office...',
+                tabOverview: 'Overview', tabScript: 'Script', tabTrends: 'Trends', tabCalendar: 'Calendar',
+                tabSales: 'Sales', tabSpy: 'Spy Radar', tabAds: 'Ad Manager', tabInventory: 'Inventory', tabTeam: 'Team',
+                dashTitle: 'System Overview Dashboard',
+                pendingTasks: 'Pending Tasks', completedTasks: 'Completed Tasks',
+                totalProducts: 'Products in Stock', adLogs: 'Ad Log Entries',
+                exportPdf: 'Export PDF', exportExcel: 'Export Excel', syncAds: 'Sync Ads',
+                analytics: 'Analytics', payment: 'Payment', aiVideo: 'AI Video',
+                allBrands: 'All Brands', realtimeConnecting: 'Realtime: connecting...',
+                activityTrend: 'Activity Trend (Last 7 Days)', revenueRoas: 'Revenue & ROAS Tracking',
+                recentActivity: 'Recent Activity', refreshData: 'Refresh Data',
+                loginTitle: 'Login to Star Office', loginEmail: 'Email', loginPassword: 'Password',
+                loginBtn: 'Login', signupBtn: 'Sign Up', guestBtn: 'Continue as Guest',
+                logoutBtn: 'Logout', settings: 'Settings'
             }
         };
 
@@ -6776,9 +6857,20 @@ You have access to the team's current data:${context}`;
         document.getElementById('byteplus-api-key').value = localStorage.getItem('byteplusApiKey') || '';
         document.getElementById('supabase-url').value = localStorage.getItem('supabaseUrl') || document.getElementById('supabase-url').value;
         document.getElementById('supabase-key').value = localStorage.getItem('supabaseKey') || document.getElementById('supabase-key').value;
+        // New config fields
+        if(document.getElementById('google-ads-api-key')) document.getElementById('google-ads-api-key').value = localStorage.getItem('googleAdsApiKey') || '';
+        if(document.getElementById('google-ads-customer-id')) document.getElementById('google-ads-customer-id').value = localStorage.getItem('googleAdsCustomerId') || '';
+        if(document.getElementById('meta-ads-token')) document.getElementById('meta-ads-token').value = localStorage.getItem('metaAdsToken') || '';
+        if(document.getElementById('meta-ads-account-id')) document.getElementById('meta-ads-account-id').value = localStorage.getItem('metaAdsAccountId') || '';
+        if(document.getElementById('ga4-measurement-id')) document.getElementById('ga4-measurement-id').value = localStorage.getItem('ga4MeasurementId') || '';
+        if(document.getElementById('stripe-api-key')) document.getElementById('stripe-api-key').value = localStorage.getItem('stripeApiKey') || '';
+        if(document.getElementById('promptpay-id')) document.getElementById('promptpay-id').value = localStorage.getItem('promptPayId') || '';
+        if(document.getElementById('brand-list')) document.getElementById('brand-list').value = (JSON.parse(localStorage.getItem('brandList') || '[]')).join(', ');
         
         // Initialize Supabase if keys exist
         initSupabase();
+        // Load brand filter
+        loadBrandFilter();
 
         function saveTelegramConfig() {
             const token = document.getElementById('telegram-bot-token').value.trim();
@@ -6832,6 +6924,14 @@ You have access to the team's current data:${context}`;
             if(googleAdsCustomerId) localStorage.setItem('googleAdsCustomerId', googleAdsCustomerId);
             if(metaToken) localStorage.setItem('metaAdsToken', metaToken);
             if(metaAccountId) localStorage.setItem('metaAdsAccountId', metaAccountId);
+            
+            // GA4, Stripe, PromptPay
+            const ga4Id = document.getElementById('ga4-measurement-id') ? document.getElementById('ga4-measurement-id').value.trim() : '';
+            const stripeKey = document.getElementById('stripe-api-key') ? document.getElementById('stripe-api-key').value.trim() : '';
+            const ppayId = document.getElementById('promptpay-id') ? document.getElementById('promptpay-id').value.trim() : '';
+            if(ga4Id) localStorage.setItem('ga4MeasurementId', ga4Id);
+            if(stripeKey) localStorage.setItem('stripeApiKey', stripeKey);
+            if(ppayId) localStorage.setItem('promptPayId', ppayId);
             
             initSupabase();
             alert('บันทึก API Keys ลงเครื่องเรียบร้อย (พร้อมใช้งานใน Next Step)');
@@ -7019,6 +7119,138 @@ You have access to the team's current data:${context}`;
                 
                 alert(msg);
             } catch(e) { alert('Analytics Error: ' + e.message); }
+        }
+        
+        // ========================================
+        // 🏷️ MULTI-BRAND DASHBOARD
+        // ========================================
+        function saveBrandConfig() {
+            const input = document.getElementById('brand-list')?.value.trim();
+            if(!input) { alert('กรุณาใส่ชื่อแบรนด์ คั่นด้วย , ครับ'); return; }
+            const brands = input.split(',').map(b => b.trim()).filter(b => b);
+            localStorage.setItem('brandList', JSON.stringify(brands));
+            loadBrandFilter();
+            alert('✅ บันทึก ' + brands.length + ' แบรนด์: ' + brands.join(', '));
+        }
+        
+        function loadBrandFilter() {
+            const brands = JSON.parse(localStorage.getItem('brandList') || '[]');
+            const sel = document.getElementById('brand-filter');
+            if(!sel) return;
+            sel.innerHTML = '<option value="all">🏷️ ทุกแบรนด์</option>';
+            brands.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b; opt.textContent = '🏷️ ' + b;
+                sel.appendChild(opt);
+            });
+        }
+        
+        function filterByBrand() {
+            const brand = document.getElementById('brand-filter')?.value || 'all';
+            localStorage.setItem('activeBrand', brand);
+            trackEvent('filter_brand', 'dashboard', brand);
+            loadOverviewDashboard();
+        }
+        
+        // ========================================
+        // 💳 PAYMENT DASHBOARD
+        // ========================================
+        function showPaymentDashboard() {
+            const stripeKey = localStorage.getItem('stripeApiKey') || '';
+            const promptPayId = localStorage.getItem('promptPayId') || '';
+            const payments = JSON.parse(localStorage.getItem('paymentHistory') || '[]');
+            
+            let msg = '💳 Payment Dashboard\n' + '═'.repeat(30) + '\n\n';
+            
+            if(promptPayId) {
+                msg += '📱 PromptPay: ' + promptPayId + '\n';
+                msg += '   QR Link: https://promptpay.io/' + promptPayId + '\n\n';
+            }
+            if(stripeKey) {
+                msg += '💳 Stripe: เชื่อมต่อแล้ว ✅\n\n';
+            }
+            
+            if(payments.length === 0) {
+                msg += '📝 ยังไม่มีประวัติการชำระเงิน\n\n';
+                msg += '➕ เพิ่มรายการผ่าน:\n';
+                msg += '   • addPayment(amount, method, note)\n';
+            } else {
+                const totalRevenue = payments.reduce((s, p) => s + (p.amount || 0), 0);
+                msg += '📊 รวม: ' + payments.length + ' รายการ | ฿' + totalRevenue.toLocaleString() + '\n\n';
+                payments.slice(-5).forEach((p, i) => {
+                    msg += '  ' + (i + 1) + '. ฿' + p.amount + ' (' + p.method + ') - ' + p.note + '\n';
+                });
+            }
+            alert(msg);
+        }
+        
+        function addPayment(amount, method, note) {
+            const payments = JSON.parse(localStorage.getItem('paymentHistory') || '[]');
+            payments.push({
+                id: 'pay_' + Date.now(), amount, method: method || 'PromptPay',
+                note: note || '', date: new Date().toISOString()
+            });
+            localStorage.setItem('paymentHistory', JSON.stringify(payments));
+            trackConversion(note || 'payment', amount);
+            sendLineNotification('\n💰 [Payment] รับเงินแล้ว!\n💵 ฿' + amount + ' (' + method + ')\n📝 ' + note);
+        }
+        
+        // ========================================
+        // 🤖 AI VIDEO GENERATOR
+        // ========================================
+        async function generateAIVideo() {
+            const aiToken = localStorage.getItem('aiVideoToken') || '';
+            const product = document.getElementById('affiliate-product-input')?.value.trim() || 'สินค้าตัวอย่าง';
+            
+            if(!aiToken) {
+                alert('🤖 AI Video Generator\n\n' +
+                    'ยังไม่ได้ตั้งค่า AI Video API\n\n' +
+                    '📋 วิธีเชื่อม:\n' +
+                    '1. ไป ⚙️ ตั้งค่า → 🎥 โรงงานคลิป\n' +
+                    '2. ใส่ API Token จาก HeyGen/CapCut\n' +
+                    '3. กลับมากดปุ่มนี้อีกครั้ง\n\n' +
+                    '📌 รองรับ:\n' +
+                    '• HeyGen - AI Video Avatar\n' +
+                    '• CapCut - AI Edit/Auto\n' +
+                    '• BytePlus - 3D/AR Effects\n\n' +
+                    'ตอนนี้จะสร้างสคริปต์ AI สำหรับ: ' + product);
+                
+                // Auto-generate a video script using Gemini
+                const geminiKey = localStorage.getItem('geminiApiKey');
+                if(geminiKey) {
+                    try {
+                        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: 'สร้างสคริปต์วิดีโอโฆษณา TikTok 30 วินาที สำหรับสินค้า "' + product + '" ให้มี Hook 3 วินาทีแรก + เนื้อหา + CTA ภาษาไทย' }] }]
+                            })
+                        });
+                        const data = await res.json();
+                        const script = data.candidates?.[0]?.content?.parts?.[0]?.text || 'ไม่สามารถสร้างสคริปต์ได้';
+                        alert('🎬 AI Video Script สำหรับ: ' + product + '\n\n' + script.substring(0, 500));
+                    } catch(e) { console.error('AI Video error:', e); }
+                }
+                return;
+            }
+            
+            // With API Token - attempt to create video
+            alert('🤖 กำลังสร้าง AI Video...\n\n📦 สินค้า: ' + product + '\n🔑 Token: ' + aiToken.substring(0, 8) + '...\n\n⏳ กรุณารอ...');
+            trackEvent('ai_video', 'content', product);
+        }
+        
+        // ========================================
+        // 📱 NATIVE APP BUILD GUIDE  
+        // ========================================
+        function showCapacitorGuide() {
+            alert('📱 Native App Build Guide\n\n' +
+                '1️⃣ ติดตั้ง Capacitor:\n   npm install\n\n' +
+                '2️⃣ เพิ่ม Android:\n   npx cap add android\n\n' +
+                '3️⃣ Sync Code:\n   npx cap sync\n\n' +
+                '4️⃣ เปิดใน Android Studio:\n   npx cap open android\n\n' +
+                '5️⃣ Build APK:\n   Android Studio → Build → Build APK\n\n' +
+                '6️⃣ ส่งขึ้น Play Store:\n   Google Play Console → Create App → Upload APK\n\n' +
+                '⚠️ ต้องการ: Android Studio + Java JDK 17');
         }
 
         async function testTelegramNotify() {

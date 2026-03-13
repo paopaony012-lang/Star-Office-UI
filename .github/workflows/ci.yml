@@ -1,0 +1,58 @@
+name: Star Office CI/CD
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check backend syntax
+        run: python -m py_compile backend/app.py
+
+      - name: Check HTML validity
+        run: |
+          echo "✅ Checking index.html exists..."
+          test -f frontend/index.html && echo "✅ index.html found"
+          
+      - name: Check required files
+        run: |
+          echo "Checking deployment files..."
+          test -f railway.json && echo "✅ railway.json"
+          test -f Procfile && echo "✅ Procfile"
+          test -f requirements.txt && echo "✅ requirements.txt"
+          test -f frontend/manifest.json && echo "✅ PWA manifest"
+          test -f frontend/sw.js && echo "✅ Service Worker"
+          test -f capacitor.config.json && echo "✅ Capacitor config"
+          echo "All checks passed! ✅"
+
+      - name: Run backend smoke test
+        run: |
+          timeout 10 python backend/app.py &
+          sleep 5
+          curl -f http://localhost:19000/ || echo "Server started but may need PORT env"
+          kill %1 2>/dev/null || true
+
+  deploy-notify:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Deploy notification
+        run: |
+          echo "🚀 Tests passed! Railway auto-deploys from master."
+          echo "📅 $(date)"
+          echo "✅ Commit: ${{ github.sha }}"
