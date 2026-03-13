@@ -1,0 +1,27 @@
+{
+  "appId": "com.haixinlobster.staroffice",
+  "appName": "Star Office",
+  "webDir": "frontend",
+  "server": {
+    "url": "https://web-production-9c080.up.railway.app",
+    "cleartext": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#1a1a2e",
+      "showSpinner": true,
+      "spinnerColor": "#3b82f6"
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#1a1a2e"
+    }
+  },
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "android": {
+    "backgroundColor": "#1a1a2e"
+  }
+}

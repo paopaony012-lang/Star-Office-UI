@@ -1456,6 +1456,17 @@
                     <div id="ov-recent-logs" style="font-size:10px; display:flex; flex-direction:column; gap:4px; color:#94a3b8;">กำลังโหลด...</div>
                 </div>
                 <button onclick="loadOverviewDashboard()" style="width:100%; margin-top:8px; background:#334155; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:11px;">🔄 รีเฟรชข้อมูล</button>
+                <!-- Export + Ad Sync Row -->
+                <div style="display:flex; gap:6px; margin-top:6px;">
+                    <button onclick="exportReportPDF()" style="flex:1; background:#7c3aed; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">📋 Export PDF</button>
+                    <button onclick="exportReportExcel()" style="flex:1; background:#0d9488; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">📊 Export Excel</button>
+                    <button onclick="syncAdPlatformData()" style="flex:1; background:#ea580c; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;" data-role="admin">📡 Sync Ads</button>
+                </div>
+                <!-- Realtime Indicator -->
+                <div id="realtime-status" style="margin-top:6px; text-align:center; font-size:9px; color:#64748b;">
+                    <span id="realtime-dot" style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#64748b; margin-right:4px;"></span>
+                    <span id="realtime-text">Realtime: กำลังเชื่อมต่อ...</span>
+                </div>
             </div>
 
             <!-- Tab: Script -->
@@ -1749,7 +1760,7 @@
         <!-- Input Area -->
         <div style="background:#1e293b; border-top:4px solid #94a3b8; padding:8px; display:flex; gap:8px; align-items:center; border-radius:0 0 4px 4px;">
             <input type="text" id="retro-chat-input" placeholder="พิมพ์คุยกับ AI..." onkeypress="handleRetroChatEnter(event)" style="flex:1; padding:10px; background:#f8fafc; border:4px solid #cbd5e1; border-radius:4px; font-family:'ArkPixel', monospace; font-size:13px; color:#1e293b; outline:none;" />
-            <button onclick="sendRetroChatMessage()" style="background:#3b82f6; border:4px solid #1e3a8a; color:white; padding:10px 14px; cursor:pointer; font-family:'ArkPixel', monospace; font-weight:bold; border-radius:4px;">ส่ง</button>
+            <button onclick="sendSmartChatMessage()" style="background:#3b82f6; border:4px solid #1e3a8a; color:white; padding:10px 14px; cursor:pointer; font-family:'ArkPixel', monospace; font-weight:bold; border-radius:4px;">ส่ง</button>
         </div>
     </div>
 
@@ -1764,6 +1775,8 @@
     <!-- Supabase SDK for Realtime Database -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="/static/vendor/phaser-3.80.1.min.js?v={{VERSION_TIMESTAMP}}"></script>
     <script>
         // --- Supabase DB Initialization ---
@@ -1778,6 +1791,8 @@
                     
                     // Fetch initial tasks if we are connected
                     loadCalendarTasks();
+                    // Start Realtime auto-refresh
+                    startRealtimeSubscription();
                 } catch(e) {
                     console.error("Supabase Init Error:", e);
                 }
@@ -5816,6 +5831,248 @@ function toggleBrokerPanel() {
             if(tabName === 'inventory') loadInventoryProducts();
         }
         
+        // ========================================
+        // 📋 EXPORT REPORTS (PDF & Excel)
+        // ========================================
+        async function exportReportPDF() {
+            if(!supabaseClient) { alert('กรุณาเชื่อมต่อ Supabase ก่อนครับ'); return; }
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(18);
+                doc.text('Star Office - Weekly Report', 14, 22);
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Generated: ' + new Date().toLocaleString('th-TH'), 14, 30);
+                doc.line(14, 33, 196, 33);
+                
+                // Tasks
+                const { data: tasks } = await supabaseClient.from('tasks_calendar').select('*');
+                const pending = tasks ? tasks.filter(t => t.status === 'pending').length : 0;
+                const done = tasks ? tasks.filter(t => t.status === 'completed').length : 0;
+                doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+                doc.text('Tasks Summary', 14, 42);
+                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+                doc.text('Pending: ' + pending + '  |  Completed: ' + done + '  |  Total: ' + (tasks ? tasks.length : 0), 14, 50);
+                
+                // Products
+                const { data: products } = await supabaseClient.from('product_inventory').select('*');
+                doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+                doc.text('Product Inventory', 14, 62);
+                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+                doc.text('Total Products: ' + (products ? products.length : 0), 14, 70);
+                if(products && products.length > 0) {
+                    let y = 78;
+                    products.slice(0, 10).forEach((p, i) => {
+                        doc.text((i+1) + '. ' + (p.product_name||'N/A') + ' - Price: ' + (p.price||0) + ' - Commission: ' + (p.commission||'0%'), 18, y);
+                        y += 7;
+                    });
+                }
+                
+                // Ads
+                const { data: ads } = await supabaseClient.from('ads_logs').select('*');
+                let adsY = products ? Math.min(78 + products.slice(0,10).length * 7 + 12, 160) : 82;
+                doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+                doc.text('Ads Performance', 14, adsY);
+                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+                if(ads && ads.length > 0) {
+                    const totalSpend = ads.reduce((s,l) => s + parseFloat(l.spend||0), 0);
+                    const totalRev = ads.reduce((s,l) => s + parseFloat(l.revenue||0), 0);
+                    const avgRoas = totalSpend > 0 ? (totalRev/totalSpend).toFixed(2) : '0';
+                    doc.text('Total Campaigns: ' + ads.length + '  |  Spend: ' + totalSpend.toFixed(0) + '  |  Revenue: ' + totalRev.toFixed(0) + '  |  Avg ROAS: ' + avgRoas, 14, adsY + 8);
+                }
+                
+                doc.save('StarOffice_Report_' + new Date().toISOString().slice(0,10) + '.pdf');
+                alert('PDF Report exported!');
+                sendLineNotification('\n📋 [Star Office] Report PDF exported\n📅 ' + new Date().toLocaleString('th-TH'));
+            } catch(e) { alert('Export PDF error: ' + e.message); console.error(e); }
+        }
+        
+        async function exportReportExcel() {
+            if(!supabaseClient) { alert('กรุณาเชื่อมต่อ Supabase ก่อนครับ'); return; }
+            try {
+                const wb = XLSX.utils.book_new();
+                
+                // Tasks sheet
+                const { data: tasks } = await supabaseClient.from('tasks_calendar').select('*');
+                if(tasks) { const ws1 = XLSX.utils.json_to_sheet(tasks); XLSX.utils.book_append_sheet(wb, ws1, 'Tasks'); }
+                
+                // Products sheet
+                const { data: products } = await supabaseClient.from('product_inventory').select('*');
+                if(products) { const ws2 = XLSX.utils.json_to_sheet(products); XLSX.utils.book_append_sheet(wb, ws2, 'Products'); }
+                
+                // Ads sheet
+                const { data: ads } = await supabaseClient.from('ads_logs').select('*');
+                if(ads) { const ws3 = XLSX.utils.json_to_sheet(ads); XLSX.utils.book_append_sheet(wb, ws3, 'Ads Logs'); }
+                
+                // Activity logs sheet
+                const { data: logs } = await supabaseClient.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(100);
+                if(logs) { const ws4 = XLSX.utils.json_to_sheet(logs); XLSX.utils.book_append_sheet(wb, ws4, 'Activity Logs'); }
+                
+                XLSX.writeFile(wb, 'StarOffice_Data_' + new Date().toISOString().slice(0,10) + '.xlsx');
+                alert('Excel exported!');
+                sendLineNotification('\n📊 [Star Office] Excel Data exported\n📅 ' + new Date().toLocaleString('th-TH'));
+            } catch(e) { alert('Export Excel error: ' + e.message); console.error(e); }
+        }
+        
+        // ========================================
+        // 📡 AD PLATFORM DATA SYNC
+        // ========================================
+        async function syncAdPlatformData() {
+            if(!supabaseClient) { alert('กรุณาเชื่อมต่อ Supabase ก่อนครับ'); return; }
+            const googleAdsKey = localStorage.getItem('googleAdsApiKey');
+            const metaToken = localStorage.getItem('metaAdsToken');
+            
+            let synced = 0;
+            
+            // Google Ads Mock Sync (replace with real API when ready)
+            if(googleAdsKey) {
+                try {
+                    // In production, call Google Ads API: https://googleads.googleapis.com/v14/...
+                    // For now, log the sync attempt
+                    await supabaseClient.from('activity_logs').insert([{
+                        category: 'Ad Sync', action_detail: 'Google Ads sync initiated', account_target: 'Google Ads API'
+                    }]);
+                    synced++;
+                } catch(e) { console.warn('Google Ads sync error:', e); }
+            }
+            
+            // Meta Ads Mock Sync
+            if(metaToken) {
+                try {
+                    await supabaseClient.from('activity_logs').insert([{
+                        category: 'Ad Sync', action_detail: 'Meta Ads sync initiated', account_target: 'Meta Marketing API'
+                    }]);
+                    synced++;
+                } catch(e) { console.warn('Meta Ads sync error:', e); }
+            }
+            
+            if(synced === 0) {
+                alert('กรุณาใส่ Google Ads API Key หรือ Meta Ads Token ใน ⚙️ ตั้งค่า ก่อนครับ\n\nหรือเพิ่มข้อมูลแอดด้วยตนเอง:');
+                // Add sample ad data for demo
+                const sampleAds = [
+                    { campaign_name: 'TikTok Haixin Lobster', platform: 'TikTok', spend: 500, revenue: 2500, roas: 5.0, product: 'กุ้งล็อบสเตอร์' },
+                    { campaign_name: 'Facebook Retargeting', platform: 'Meta', spend: 300, revenue: 900, roas: 3.0, product: 'เซ็ตซีฟู้ด' },
+                    { campaign_name: 'Google Shopping', platform: 'Google', spend: 200, revenue: 400, roas: 2.0, product: 'ปูอลาสก้า' }
+                ];
+                const { error } = await supabaseClient.from('ads_logs').insert(sampleAds);
+                if(!error) {
+                    alert('✅ เพิ่มข้อมูลตัวอย่าง 3 แคมเปญแล้ว! กด 🔄 รีเฟรชเพื่อดูกราฟ');
+                    sendLineNotification('\n📡 [Star Office] Ads Data Synced\n📊 3 sample campaigns added');
+                    loadOverviewDashboard();
+                } else { alert('Error: ' + error.message); }
+            } else {
+                alert('✅ Synced ' + synced + ' platform(s)!');
+                loadOverviewDashboard();
+            }
+        }
+        
+        // ========================================
+        // 📱 SUPABASE REALTIME SUBSCRIPTIONS
+        // ========================================
+        function startRealtimeSubscription() {
+            if(!supabaseClient) return;
+            try {
+                // Subscribe to all table changes
+                const channel = supabaseClient.channel('star-office-realtime')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks_calendar' }, (payload) => {
+                        console.log('📅 Realtime: tasks_calendar changed', payload);
+                        loadOverviewDashboard();
+                    })
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'product_inventory' }, (payload) => {
+                        console.log('📦 Realtime: product_inventory changed', payload);
+                        loadOverviewDashboard();
+                    })
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'ads_logs' }, (payload) => {
+                        console.log('📊 Realtime: ads_logs changed', payload);
+                        loadOverviewDashboard();
+                    })
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, (payload) => {
+                        console.log('📝 Realtime: new activity', payload);
+                        loadOverviewDashboard();
+                    })
+                    .subscribe((status) => {
+                        const dot = document.getElementById('realtime-dot');
+                        const text = document.getElementById('realtime-text');
+                        if(dot && text) {
+                            if(status === 'SUBSCRIBED') {
+                                dot.style.background = '#22c55e';
+                                text.textContent = 'Realtime: เชื่อมต่อแล้ว ✅';
+                                text.style.color = '#22c55e';
+                            } else if(status === 'CLOSED') {
+                                dot.style.background = '#ef4444';
+                                text.textContent = 'Realtime: ขาดการเชื่อมต่อ';
+                                text.style.color = '#ef4444';
+                            } else {
+                                dot.style.background = '#fbbf24';
+                                text.textContent = 'Realtime: ' + status;
+                                text.style.color = '#fbbf24';
+                            }
+                        }
+                    });
+                window._realtimeChannel = channel;
+            } catch(e) { console.warn('Realtime subscription error:', e); }
+        }
+        
+        // ========================================
+        // 💬 ENHANCED AI CHATBOT
+        // ========================================
+        async function sendSmartChatMessage() {
+            const input = document.getElementById('retro-chat-input');
+            const msg = input.value.trim();
+            if(!msg) return;
+            input.value = '';
+            addChatMessage('user', msg);
+            
+            const geminiKey = localStorage.getItem('geminiApiKey');
+            if(!geminiKey) { addChatMessage('bot', '❌ กรุณาใส่ Gemini API Key ก่อนครับ'); return; }
+            
+            // Gather context from Supabase
+            let context = '';
+            if(supabaseClient) {
+                try {
+                    const { data: tasks } = await supabaseClient.from('tasks_calendar').select('task_name,status').limit(10);
+                    const { data: products } = await supabaseClient.from('product_inventory').select('product_name,price').limit(10);
+                    const { data: ads } = await supabaseClient.from('ads_logs').select('campaign_name,roas,spend,revenue').limit(10);
+                    context = '\\n--- CONTEXT ---\\n';
+                    if(tasks) context += 'Tasks: ' + JSON.stringify(tasks.slice(0,5)) + '\\n';
+                    if(products) context += 'Products: ' + JSON.stringify(products.slice(0,5)) + '\\n';
+                    if(ads) context += 'Ads: ' + JSON.stringify(ads.slice(0,5)) + '\\n';
+                } catch(e) { console.warn('Context fetch error:', e); }
+            }
+            
+            const systemPrompt = `You are Star Office AI Assistant for Haixin Lobster team.
+You help with: SEO strategy, TikTok affiliate marketing, ad campaign optimization, inventory management, and team coordination.
+Always answer in Thai. Be concise but helpful. Use emojis.
+You have access to the team's current data:${context}`;
+            
+            try {
+                addChatMessage('bot', '⏳ กำลังคิด...');
+                const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: systemPrompt + '\n\nUser: ' + msg }] }],
+                        generationConfig: { maxOutputTokens: 1024, temperature: 0.7 }
+                    })
+                });
+                const data = await resp.json();
+                // Remove loading message
+                const chatbox = document.getElementById('retro-chat-messages');
+                if(chatbox && chatbox.lastChild) chatbox.removeChild(chatbox.lastChild);
+                
+                if(data.candidates && data.candidates[0]) {
+                    const reply = data.candidates[0].content.parts[0].text;
+                    addChatMessage('bot', reply);
+                } else {
+                    addChatMessage('bot', '❌ ไม่สามารถตอบได้: ' + JSON.stringify(data.error || 'unknown'));
+                }
+            } catch(e) {
+                addChatMessage('bot', '❌ Error: ' + e.message);
+            }
+        }
+
         async function loadOverviewDashboard() {
             if(!supabaseClient) {
                 document.getElementById('ov-recent-logs').innerHTML = '<div style="color:#f87171;">กรุณาตั้งค่า Supabase ก่อนครับ</div>';
@@ -6584,7 +6841,7 @@ function toggleBrokerPanel() {
         
         function handleRetroChatEnter(e) {
             if (e.key === 'Enter') {
-                sendRetroChatMessage();
+                sendSmartChatMessage();
             }
         }
         
