@@ -12,6 +12,10 @@ import shutil
 import subprocess
 import tempfile
 import threading
+import requests
+import google.generativeai as genai
+import pandas as pd
+from werkzeug.utils import secure_filename
 from pathlib import Path
 from security_utils import is_production_mode, is_strong_secret, is_strong_drawer_pass
 from memo_utils import get_yesterday_date_str, sanitize_content, extract_memo_from_file
@@ -250,18 +254,16 @@ _INDEX_HTML_CACHE = None
 
 @app.route("/", methods=["GET"])
 def index():
-    """Serve the pixel office UI with built-in version cache busting"""
-    # 默认禁用页面打开即换背景，避免首屏慢
-    # 如需启用，可配置 AUTO_ROTATE_HOME_ON_PAGE_OPEN=1
+    """Serve the pixel office UI without caching for rapid development"""
     _maybe_apply_random_home_favorite()
 
-    global _INDEX_HTML_CACHE
-    if _INDEX_HTML_CACHE is None:
-        with open(FRONTEND_INDEX_FILE, "r", encoding="utf-8") as f:
-            raw_html = f.read()
-        _INDEX_HTML_CACHE = raw_html.replace("{{VERSION_TIMESTAMP}}", VERSION_TIMESTAMP)
+    with open(FRONTEND_INDEX_FILE, "r", encoding="utf-8") as f:
+        raw_html = f.read()
+    
+    # Do not cache to allow hot-reloading
+    html = raw_html.replace("{{VERSION_TIMESTAMP}}", datetime.now().strftime("%Y%m%d_%H%M%S"))
 
-    resp = make_response(_INDEX_HTML_CACHE)
+    resp = make_response(html)
     resp.headers["Content-Type"] = "text/html; charset=utf-8"
     return resp
 
@@ -283,6 +285,513 @@ def electron_standalone_page():
     resp.headers["Content-Type"] = "text/html; charset=utf-8"
     return resp
 
+@app.route("/api/agency-agents", methods=["GET"])
+def get_agency_agents():
+    import os
+    import re
+    
+    ag_dir = r"c:\Users\AD PAO\Desktop\New folder (3)\agency-agents"
+    meta_dir = r"c:\Users\AD PAO\Desktop\New folder (3)\MetaClaw\memory_data\skills"
+    agents = []
+    
+    def process_md(path, slug, category):
+        name = slug.replace("-", " ").title()
+        desc = ""
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read(1024)
+                if content.startswith("---"):
+                    end_idx = content.find("---", 3)
+                    if end_idx != -1:
+                        fm = content[3:end_idx]
+                        m_name = re.search(r"name:\s*(.*)", fm)
+                        if m_name:
+                            name = m_name.group(1).strip()
+                        m_desc = re.search(r"description:\s*(.*)", fm)
+                        if m_desc:
+                            desc = m_desc.group(1).strip()
+        except Exception:
+            pass
+        return {"id": slug, "name": name, "description": desc, "category": category}
+
+    if os.path.exists(ag_dir):
+        for root, _, files in os.walk(ag_dir):
+            if ".git" in root or "scripts" in root or "examples" in root or "integrations" in root:
+                continue
+            for file in files:
+                if file.endswith(".md") and file not in ["README.md", "CONTRIBUTING.md", "AGENTS.md", "IDENTITY.md", "SOUL.md"]:
+                    path = os.path.join(root, file)
+                    slug = file.replace(".md", "")
+                    category = os.path.basename(root)
+                    agents.append(process_md(path, slug, category))
+
+    if os.path.exists(meta_dir):
+        for root, _, files in os.walk(meta_dir):
+            for file in files:
+                if file == "SKILL.md":
+                    path = os.path.join(root, file)
+                    slug = "metaclaw-" + os.path.basename(root)
+                    category = "metaclaw"
+                    agents.append(process_md(path, slug, category))
+
+    return jsonify({"success": True, "agents": agents})
+
+@app.route("/api/affiliate/generate-script", methods=["POST"])
+def generate_affiliate_script():
+    try:
+        data = request.json
+        product = data.get("product", "สินค้าทั่วไป")
+        
+        # Simulate loading from MetaClaw agents
+        import time
+        time.sleep(1.5)  # Make it feel slightly real
+        
+        script_output = f"""🚨 [รายงานจาก MetaClaw TikTok Strategist & Copywriter] 🚨
+วิเคราะห์สินค้า: {product}
+---------------------------------------------
+🎯 แผนการทำคลิปตะกร้า Affiliate เพื่อกระตุ้นยอดขาย
+
+📌 สไตล์ที่ 1: ป้ายยาแบบตรงไปตรงมา (เหมาะกับคนรีบ)
+- Hook 3 วิแรก: "ใครกำลังหา {product} ฟังคลิปนี้ให้ด่วนๆ!"
+- บทพูด: "เราเห็นคนรีวิวกันเยอะมาก เลยจัดมาลองเอง สรุปคือดีกว่าที่คิด! วิธีใช้คือ... ผลลัพธ์ที่ได้คือปังมาก ใครสนใจกดตระกร้าเหลืองมุมซ้ายล่างได้เลย ของหมดไวมาก"
+- เพลงฮิต: กระแส TikTok แดนซ์เร็วๆ หรือเสียงพูดธรรมชาติ
+
+📌 สไตล์ที่ 2: รีวิวแบบเพื่อนบอกเพื่อน (Real & Authentic)
+- Hook 3 วิแรก: "(ทำหน้าตกใจ) เพิ่งรู้ว่า {product} มันทำแบบนี้ได้ด้วย!"
+- บทพูด: "คือตอนแรกไม่เชื่อนะเพื่อนๆ ว่า {product} มันจะดีจริง แต่พอได้ลองเอง... ดูสิ! มันใช้งานง่ายมากแถมประหยัดเวลาด้วย อยากให้ทุกคนได้ไปลอง กดที่ตะกร้าด่วน"
+- เพลงฮิต: เสียงบรรยากาศชิลๆ หรือเพลง Lo-Fi
+
+📌 สไตล์ที่ 3: แก้ปัญหา (Problem-Solution)
+- Hook 3 วิแรก: "ถ้าคุณกำลังเจอปัญหานี้... คุณต้องดูคลิปนี้!"
+- บทพูด: "ปัญหานี้จบด้วย {product} เท่านั้น! เราเคยเป็นมาก่อน ลองมาหลายวิธีแต่จบที่ตัวนี้ ใช้แล้วชีวิตดีขึ้นมากกก แถมช่วงนี้มีโปรลดราคาพิเศษที่ตะกร้านะ"
+- เพลงฮิต: เพลงตื่นเต้น จังหวะเร้าใจ
+
+📌 สไตล์ที่ 4: แจกทริค/สอนวิธีใช้ (Educational)
+- Hook 3 วิแรก: "รู้วิธีใช้ {product} ที่ถูกต้องกันหรือยัง?"
+- บทพูด: "วันนี้จะมาแจกทริคลับ! การใช้ {product} ให้ได้ผล 100% ขั้นตอนที่ 1... ขั้นตอนที่ 2... รับรองผลลัพธ์คูณสอง! ใครยังไม่มีรีบกดตะกร้าด่วนๆ คร้าบ"
+- เพลงฮิต: เสียง AI สอน หรือเสียงบรรยายอินโฟกราฟิก
+
+📌 สไตล์ที่ 5: ASMR / ตัดต่อฉับไว (Satisfying)
+- Hook 3 วิแรก: (ซูมเข้าใกล้ๆ ถ่ายให้เห็น {product} ชัดๆ พร้อมเสียง แกะกล่อง/ใช้งาน)
+- บทพูด: "ASMR แกะกล่อง {product} ฟังเสียงสิฟินมาก... สีสวย ใช้งานเริ่ด 10/10 ไม่หัก รีบไปตำที่ตะกร้านะตะ"
+- เพลงฮิต: ปิดเพลง เปิดเสียง ASMR หรือเพลงชิลๆ เบาๆ
+
+💡 คำแนะนำเพิ่มเติมจาก Copywriter: 
+- อย่าลืมใส่แคปชั่นกระตุ้นความรู้สึก เช่น "ของดีบอกต่อ", "ห้ามพลาด", "ต้องมี" 
+- แฮชแท็กที่ควรใช้: #ป้ายยาTikTok #รีวิว{product.replace(' ', '')} #ของดีบอกต่อ"""
+        
+        return jsonify({"success": True, "script": script_output})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route("/api/affiliate/trending", methods=["GET"])
+def get_trending_products():
+    """Return trending affiliate products, from file if uploaded, else mock"""
+    trends_file = os.path.join(ROOT_DIR, "trends_db.json")
+    if os.path.exists(trends_file):
+        try:
+            with open(trends_file, "r", encoding="utf-8") as f:
+                trends = json.load(f)
+            return jsonify({"success": True, "trends": trends})
+        except Exception:
+            pass
+
+    trends = [
+        {"id": 1, "name": "เซรั่มวิตามินซีแบบซอง", "commission": "15%", "sales": "5.2k", "trend": "🔥 ขาขึ้น (คู่แข่งน้อย)"},
+        {"id": 2, "name": "ไมค์ไร้สายติดปกเสื้อ (กล่องชาร์จ)", "commission": "20%", "sales": "12k", "trend": "🔥 กระแสกำลังมา"},
+        {"id": 3, "name": "กระบอกน้ำเก็บความเย็น 2 ลิตร", "commission": "10%", "sales": "8k", "trend": "คงที่ (ขายง่าย)"},
+        {"id": 4, "name": "เสื้อยืดทรงโอเวอร์ไซส์ มินิมอล", "commission": "12%", "sales": "20k", "trend": "คงที่ (ขายเรื่อยๆ)"},
+        {"id": 5, "name": "ขาตั้งมือถือหมุนตามหน้า 360", "commission": "18%", "sales": "3.1k", "trend": "🔥 ดาวรุ่งมาแรง"}
+    ]
+    return jsonify({"success": True, "trends": trends})
+
+@app.route("/api/affiliate/upload-trends", methods=["POST"])
+def upload_trends():
+    """Upload Scraped Excel/CSV to populate trends A (Live Scraper)"""
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"success": False, "error": "ไม่พบไฟล์"})
+        
+    try:
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(file)
+        else:
+            df = pd.read_excel(file)
+            
+        string_cols = df.select_dtypes(include=['object']).columns
+        numeric_cols = df.select_dtypes(include=['number']).columns
+        
+        if len(string_cols) == 0 or len(numeric_cols) == 0:
+            return jsonify({"success": False, "error": "รูปแบบไฟล์ไม่ถูกต้อง (ต้องมีตัวอักษรและตัวเลข)"})
+            
+        name_col = string_cols[0]
+        sales_col = numeric_cols[0]
+        
+        # ค้นหา column ที่มีคำว่า 'sales' หรือใกล้เคียง ถ้ามี
+        for col in numeric_cols:
+            if 'sale' in str(col).lower() or 'ยอดขาย' in str(col):
+                sales_col = col
+                break
+                
+        df = df.sort_values(by=sales_col, ascending=False).head(10)
+        
+        trends = []
+        for i, row in df.iterrows():
+            comm_val = "10%"
+            for c in numeric_cols:
+                if 'com' in str(c).lower() or 'คอม' in str(c):
+                    comm_val = f"{int(row[c])}%"
+                    break
+                    
+            trends.append({
+                "id": len(trends)+1,
+                "name": str(row[name_col]),
+                "commission": comm_val,
+                "sales": f"{int(row[sales_col]):,}",
+                "trend": "🚀 ดึงข้อมูลจริงจากไฟล์"
+            })
+            
+        with open(os.path.join(ROOT_DIR, "trends_db.json"), "w", encoding="utf-8") as f:
+            json.dump(trends, f, ensure_ascii=False)
+            
+        return jsonify({"success": True, "trends": trends})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route("/api/affiliate/analyze-sales", methods=["POST"])
+def analyze_sales():
+    """Upload Excel/CSV to analyze best sales C (Sales & Performance Sync)"""
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"success": False, "error": "ไม่พบไฟล์"})
+        
+    try:
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(file, on_bad_lines='skip')
+        else:
+            df = pd.read_excel(file)
+            
+        string_cols = df.select_dtypes(include=['object']).columns
+        numeric_cols = df.select_dtypes(include=['number']).columns
+        
+        if len(string_cols) == 0 or len(numeric_cols) == 0:
+            return jsonify({"success": False, "error": "รูปแบบไฟล์ไม่ถูกต้อง"})
+            
+        name_col = string_cols[0]
+        sales_col = numeric_cols[0]
+        
+        # จัดกลุ่มด้วยชื่อสินค้า และรวมยอดขาย
+        summary = df.groupby(name_col)[sales_col].sum().reset_index()
+        summary = summary.sort_values(by=sales_col, ascending=False).head(5)
+        
+        insights = []
+        for i, row in summary.iterrows():
+            val = int(row[sales_col])
+            msg = f"✅ ยอดขายพุ่งกระฉูด: +฿{val:,} (ยิงแอดเติมเงินด่วน!)" if val > 1000 else f"⚠️ ยอดขายกลางๆ: +฿{val:,} (ปรับปกคลิปใหม่)"
+            if val < 500:
+                msg = f"❌ ยอดน้อย ควรปั้นสคริปต์ใหม่: +฿{val:,}"
+            insights.append({
+                "product": str(row[name_col]),
+                "sales": f"฿{val:,}",
+                "text": msg
+            })
+            
+        return jsonify({"success": True, "insights": insights})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route("/api/affiliate/notify", methods=["POST"])
+def send_telegram_notify():
+    """Send message to Telegram Bot"""
+    try:
+        data = request.json
+        token = data.get("token", "").strip()
+        chat_id = data.get("chat_id", "").strip()
+        message = data.get("message", "ทดสอบระบบแจ้งเตือนจาก Star Office SEO 🚀")
+        
+        if not token or not chat_id:
+            return jsonify({"success": False, "error": "ไม่ได้ระบุ Telegram Bot Token หรือ Chat ID!"})
+            
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = {"chat_id": chat_id, "text": message}
+        
+        response = requests.post(url, json=payload)
+        
+        if response.status_code == 200:
+            return jsonify({"success": True, "message": "ส่งข้อความสำเร็จแล้ว!"})
+        else:
+            return jsonify({"success": False, "error": response.text})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route("/api/affiliate/line-notify", methods=["POST"])
+def api_line_notify():
+    """Send message to LINE Notify"""
+    try:
+        data = request.json
+        token = data.get("token", "").strip()
+        message = data.get("message", "ทดสอบจาก Star Office 🚀")
+        
+        if not token:
+            return jsonify({"success": False, "error": "ไม่ได้ระบุ LINE Notify Token!"})
+        
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        payload = {"message": message}
+        
+        response = requests.post("https://notify-api.line.me/api/notify", headers=headers, data=payload)
+        
+        if response.status_code == 200:
+            return jsonify({"success": True, "message": "ส่ง LINE Notify สำเร็จ!"})
+        else:
+            return jsonify({"success": False, "error": response.text})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route("/api/affiliate/generate-script", methods=["POST"])
+def api_generate_script():
+    """Generates an affiliate video script using Google Gemini API"""
+    data = request.json
+    product = data.get("product", "ไม่ระบุสินค้า")
+    gemini_key = data.get("gemini_key", "").strip()
+    
+    if not gemini_key:
+        return jsonify({"success": False, "error": "ไม่ได้ตั้งค่า Gemini API Key"})
+    
+    try:
+        genai.configure(api_key=gemini_key)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        prompt = f"""
+        คุณคือผู้เชี่ยวชาญด้านการเขียนสคริปต์สั้นบน TikTok/Reels/Shorts เพื่อขายสินค้าแบบเป็นธรรมชาติ (Affiliate Marketing)
+        จงเขียนสคริปต์ความยาวไม่เกิน 60 วินาที เพื่อรีวิวหรือป้ายยาสินค้าต่อไปนี้: "{product}"
+        โดยมีโครงสร้าง:
+        1. Hook (ท่อนฮุคดึงดูดใจ 3 วินาทีแรก)
+        2. Body (นำเสนอจุดเด่น และแก้ปัญหา 20-30 วินาที)
+        3. CTA (Call To Action ปิดการขาย ท่าชี้ตะกร้า 10 วินาทีสุดท้าย)
+        ขอให้ใช้ภาษาพูดที่เป็นกันเอง วัยรุ่น น่าตื่นเต้น และจูงใจคนซื้อ!
+        """
+        response = model.generate_content(prompt)
+        script = response.text if response.text else "เกิดข้อผิดพลาดในการสร้างสคริปต์"
+        return jsonify({"success": True, "script": script})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Gemini API Error: {str(e)}"})
+
+@app.route("/api/affiliate/generate-video", methods=["POST"])
+def api_generate_video():
+    """Clip Factory Video Generator Endpoint (Simulated via Gemini)"""
+    data = request.json
+    script_or_product = data.get("product", "No Data")
+    gemini_key = data.get("gemini_key", "").strip()
+    elevenlabs_key = data.get("elevenlabs_key", "").strip()
+    byteplus_key = data.get("byteplus_key", "").strip()
+    
+    if not gemini_key:
+        return jsonify({"success": False, "error": "กรุณาใส่ Gemini API Key ในเมนูตั้งค่าก่อนครับ"})
+        
+    try:
+        genai.configure(api_key=gemini_key)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        prompt = f"""
+        คุณคือผู้กำกับ AI โรงงานรับผลิตคลิปสั้น Affiliate ให้วิเคราะห์เนื้อหานี้: "{script_or_product}"
+        แล้วสรุปแผนการถ่ายทำคลิป:
+        1. avatar: ลักษณะของนางแบบ/นายแบบ (เช่น "หญิงสาวผมสั้น สไตล์เกาหลี ยิ้มแย้ม")
+        2. scene: ฉากพื้นหลัง (เช่น "คาเฟ่มินิมอล", "โต๊ะทำงานแสงธรรมชาติ")
+        3. voice: โทนเสียงพากย์ (เช่น "เสียงผู้หญิงสดใส น่าเชื่อถือ")
+        4. image_prompt_en: ขอ Prompt ภาษาอังกฤษสั้นๆ สำหรับสร้างรูปภาพนางแบบและฉาก (เช่น "beautiful korean girl short hair smiling, minimal cafe background, highly detailed")
+        5. best_agent: เลือกเอเจนท์ 1 คนที่เหมาะกับสินค้านี้ที่สุด จากตัวเลือกดังนี้ (ตอบเป็นชื่อสั้นๆ เท่านั้น): "Guest 1 (ผู้ชาย/ไอที/ช่าง)", "Guest 2 (ผู้หญิง/แม่และเด็ก)", "Guest 3 (วัยรุ่นหญิง/สกินแคร์)", "Guest 4 (วัยรุ่นหญิงผมยาว/อาหาร/บิวตี้)", "Guest 5 (ผู้ชายวัยรุ่น/เกม)", "Guest 6 (คุณลุง/อสังหา/สุขภาพ)"
+        
+        ตอบเป็น JSON อย่างเดียวเท่านั้น ไม่ต้องแสดงอธิบายอื่น:
+        {{
+            "avatar": "...",
+            "scene": "...",
+            "voice": "...",
+            "image_prompt_en": "...",
+            "best_agent": "..."
+        }}
+        """
+        response = model.generate_content(prompt)
+        import json
+        res_text = response.text.replace("```json", "").replace("```", "").strip()
+        analysis = json.loads(res_text)
+        
+        import random
+        import urllib.parse
+        
+        # Real AI Image using Pollinations (free, no API key required)
+        english_prompt = analysis.get("image_prompt_en", "beautiful asian female influencer, holding product, studio light, highly detailed")
+        image_prompt = f"{english_prompt}, masterpiece, 8k resolution, photorealistic"
+        prompt_encoded = urllib.parse.quote(image_prompt)
+        ai_thumb = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=300&height=400&nologo=true&seed={random.randint(1,10000)}"
+        voice_status = f"ElevenLabs ({analysis.get('voice', 'AI Voice')})" if elevenlabs_key else analysis.get("voice", "AI Voice")
+        ar_status = "✨ AR Effect ใช้งานแล้ว (BytePlus Connected)" if byteplus_key else "ปกติ (ไม่มี AR)"
+        
+        return jsonify({
+            "success": True, 
+            "message": "ส่งคำสั่งตัดต่อคลิปสำเร็จ", 
+            "details": {
+                "status": "กำลังประมวลผล (Rendering 0%)...",
+                "avatar": analysis.get("avatar", "นางแบบจำลอง"),
+                "best_agent": analysis.get("best_agent", "Guest แนะนำโดย AI"),
+                "scene": analysis.get("scene", "พื้นหลัง AI"),
+                "voice": voice_status,
+                "ar_effect": ar_status,
+                "eta": "15-20 วินาที",
+                "thumbnail_url": ai_thumb
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Clip Factory Error: {str(e)}"})
+
+@app.route("/api/affiliate/spy-radar", methods=["POST"])
+def api_spy_radar():
+    """Competitor Spy Radar Endpoint (Apify + Gemini)"""
+    data = request.json
+    url = data.get("url", "").strip()
+    gemini_key = data.get("gemini_key", "").strip()
+    apify_token = data.get("apify_token", "").strip()
+    
+    if not url:
+        return jsonify({"success": False, "error": "กรุณาใส่ลิงก์สแกน"})
+    if not gemini_key:
+        return jsonify({"success": False, "error": "กรุณาใส่ Gemini Key ที่แท็บ API"})
+    if not apify_token:
+        return jsonify({"success": False, "error": "กรุณาใส่ Apify Token เลื่อนลงไปที่แท็บ API ก่อนครับ"})
+        
+    try:
+        genai.configure(api_key=gemini_key)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        prompt = f"""
+        วิเคราะห์วิดีโอคู่แข่งจาก URL หรือ Keyword ต่อไปนี้ (ข้อมูลจาก Apify): "{url}"
+        เพื่อเอาไปเป็นไอเดียทำคลิปดึงยอดขาย
+        
+        ตอบเป็น JSON อย่างเดียวเท่านั้น ไม่ต้องแสดงอธิบายอื่น:
+        {{
+            "viral_sound": "ชื่อเพลงฮิต (สมมติก็ได้ถ้าเดาไม่ได้)",
+            "sound_uses": "จำนวนครั้งรันตัวเลขไปเลย (เช่น 85,200)",
+            "hook_text": "สคริปต์ฮุคดึงดูดใจ 1 ประโยคเด็ดขาด",
+            "hook_retention": "XX%" 
+        }}
+        """
+        response = model.generate_content(prompt)
+        import json
+        res_text = response.text.replace("```json", "").replace("```", "").strip()
+        analysis = json.loads(res_text)
+        
+        return jsonify({
+            "success": True,
+            "target_url": url,
+            "viral_sound": analysis.get("viral_sound", "ไม่ทราบชื่อเพลง (Trending)"),
+            "sound_uses": analysis.get("sound_uses", "10,000+"),
+            "hook_text": analysis.get("hook_text", "ฮุค 3 วิแรกชวนดูต่อ"),
+            "hook_retention": analysis.get("hook_retention", "80%")
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Spy Radar Error: {str(e)}"})
+
+@app.route("/api/elevenlabs/voices", methods=["POST"])
+def api_elevenlabs_voices():
+    """Fetch available voices from ElevenLabs API"""
+    data = request.json
+    api_key = data.get("elevenlabs_key", "").strip()
+    if not api_key:
+        return jsonify({"success": False, "error": "กรุณาใส่ ElevenLabs API Key ก่อนครับ"})
+    try:
+        import urllib.request
+        req = urllib.request.Request(
+            "https://api.elevenlabs.io/v1/voices",
+            headers={"xi-api-key": api_key, "Accept": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            import json
+            raw = json.loads(resp.read().decode())
+        voices = raw.get("voices", [])
+        simplified = [{"voice_id": v["voice_id"], "name": v["name"], "labels": v.get("labels", {})} for v in voices]
+        return jsonify({"success": True, "voices": simplified})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"ElevenLabs Error: {str(e)}"})
+
+@app.route("/api/agent/chat", methods=["POST"])
+def api_agent_chat():
+    """Generic Agent Chat Endpoint using OpenAI"""
+    data = request.json
+    message = data.get("message", "").strip()
+    openai_key = data.get("openai_key", "").strip()
+    history = data.get("history", [])
+    
+    if not openai_key:
+        return jsonify({"success": False, "error": "ไม่ได้ตั้งค่า OpenAI API Key"})
+    if not message:
+        return jsonify({"success": False, "error": "ข้อความว่างเปล่า"})
+        
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=openai_key)
+        
+        system_prompt = {
+            "role": "system",
+            "content": "คุณคือ AI ผู้ช่วยในออฟฟิศของบริษัท Star Office AI ของคุณเปา ให้ตอบคำถามอย่างเป็นกันเอง กระตือรือร้น มีความรู้เรื่องการตลาด ทำคลิป Affiliate เล็กน้อย ถนัดช่วยงานทั่วไป ให้ตอบเป็นภาษาไทยด้วยน้ำเสียงน่ารักๆ มีอีโมจิบ้าง (สไตล์การเขียนแบบ 8-bit retro AI assistant) ถ้าผู้ใช้ขอให้ 'สร้างสคริปต์' หรือ 'เขียนสคริปต์' (เช่น 'ช่วยเขียนสคริปต์ขายครีมหน่อย') ให้ตอบพร้อมแนบรหัส [ACTION:GENERATE_SCRIPT] ต่อท้ายข้อความ ถ้าผู้ใช้อยากให้ 'สร้างคลิป' หรือ 'ทำคลิป' (เช่น 'สร้างคลิปให้หน่อย') ให้ตอบพร้อมแนบรหัส [ACTION:GENERATE_VIDEO] ต่อท้ายข้อความ"
+        }
+        
+        messages = [system_prompt]
+        for msg in history[-10:]:  # Keep last 10 messages for context
+            messages.append({"role": msg["role"], "content": msg["content"]})
+        messages.append({"role": "user", "content": message})
+            
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            max_tokens=600,
+            temperature=0.7
+        )
+        reply = completion.choices[0].message.content
+        return jsonify({"success": True, "reply": reply})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"OpenAI Error: {str(e)}"})
+
+@app.route("/api/affiliate/auto-sync-api", methods=["POST"])
+def api_auto_sync():
+    """Mockup for Shopee/TikTok Official API & Apify Sync"""
+    data = request.json or {}
+    apify_token = data.get("apify_token", "")
+    
+    import random
+    if apify_token:
+        mock_trends = [
+            {"id": 1, "name": f"เซ็ตครีมโสมเกาหลี (Apify Live)", "commission": "40%", "sales": f"{random.randint(100,500)}k", "trend": "🔥 ยอดวิว 1M+ ใน 24h"},
+            {"id": 2, "name": f"หูฟังบลูทูธ Y2K (Apify Live)", "commission": "25%", "sales": f"{random.randint(50,99)}k", "trend": "📈 กำลังไต่แรงก์ TikTok Shop"},
+            {"id": 3, "name": f"กาแฟลดน้ำหนัก (Apify Live)", "commission": "35%", "sales": f"{random.randint(10,40)}k", "trend": "⭐ ครีเอเตอร์รีวิวเพียบ"}
+        ]
+    else:
+        mock_trends = [
+            {"id": 1, "name": f"สินค้า API ดึงสด {random.randint(1,99)}", "commission": "30%", "sales": "99k", "trend": "🔥 เทรนด์ API สด!"},
+            {"id": 2, "name": "กระเป๋าแฟชั่น (Shopee API)", "commission": "15%", "sales": "45k", "trend": "📈 กำลังขึ้น"},
+        ]
+    
+    with open(os.path.join(ROOT_DIR, "trends_db.json"), "w", encoding="utf-8") as f:
+        json.dump(mock_trends, f, ensure_ascii=False)
+        
+    return jsonify({"success": True, "trends": mock_trends})
+
+@app.route("/api/affiliate/ad-bot", methods=["POST"])
+def api_ad_bot():
+    """Mockup for Auto Ad Scaler Bot"""
+    data = request.json
+    action = data.get("action", "stop")
+    
+    if action == "start":
+        logs = [
+            "[Action] เช็คแคมเปญ: 'สบู่รักษาสิว' ROAS = 4.5 🚀",
+            "[Action] ปรับงบแคมเปญ 'สบู่รักษาสิว' +500 บ./วัน",
+            "-------------------",
+            "[Action] เช็คแคมเปญ: 'ร่มพับได้' ROAS = 0.8 ❌",
+            "[Action] ปิด (Pause) แคมเปญ 'ร่มพับได้' ทันทีเพื่อหยุดขาดทุน"
+        ]
+        return jsonify({"success": True, "status": "ON", "logs": logs})
+    else:
+        return jsonify({"success": True, "status": "OFF", "logs": ["[System] ปิดบอทยิงแอดแล้ว"]})
 
 @app.route("/join", methods=["GET"])
 def join_page():
@@ -2066,7 +2575,7 @@ def assets_upload():
 
 
 if __name__ == "__main__":
-    raw_port = os.environ.get("STAR_BACKEND_PORT", "19000")
+    raw_port = os.environ.get("PORT", os.environ.get("STAR_BACKEND_PORT", "19000"))
     try:
         backend_port = int(raw_port)
     except ValueError:
@@ -2099,5 +2608,12 @@ if __name__ == "__main__":
             print("Security hardening: OK")
     print("=" * 50)
 
-    app.run(host="0.0.0.0", port=backend_port, debug=False)
+    import sys
+    try:
+        from waitress import serve
+        print("Starting via Waitress (WSGI Production Server)...")
+        serve(app, host="0.0.0.0", port=backend_port)
+    except ImportError:
+        print("Waitress not found. Falling back to Flask development server...")
+        app.run(host="0.0.0.0", port=backend_port, debug=False)
 

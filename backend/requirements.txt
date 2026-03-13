@@ -1,2 +1,9 @@
-flask==3.0.2
-pillow==10.4.0
+flask
+pillow
+waitress
+requests
+pandas
+openpyxl
+werkzeug
+google-generativeai
+openai
