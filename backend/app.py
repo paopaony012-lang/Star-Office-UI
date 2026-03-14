@@ -2282,7 +2282,9 @@ def assets_auth():
     try:
         data = request.get_json(silent=True) or {}
         pwd = (data.get("password") or "").strip()
-        if pwd and pwd == ASSET_DRAWER_PASS_DEFAULT:
+        admin_pin = os.getenv("ADMIN_PIN", "4789")
+        # Accept both ASSET_DRAWER_PASS and ADMIN_PIN
+        if pwd and (pwd == ASSET_DRAWER_PASS_DEFAULT or pwd == admin_pin):
             session["asset_editor_authed"] = True
             return jsonify({"ok": True, "msg": "ยืนยันสำเร็จ"})
         return jsonify({"ok": False, "msg": "รหัสไม่ถูกต้อง"}), 401

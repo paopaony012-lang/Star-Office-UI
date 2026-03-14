@@ -5426,24 +5426,24 @@ function toggleBrokerPanel() {
 
             // Screen glow rectangle (simulates CRT monitor)
             const screenGlow = this.add.rectangle(MONITOR_X, MONITOR_Y, SCREEN_W, SCREEN_H, 0x3498db, 0.25);
-            screenGlow.setDepth(999);
+            screenGlow.setDepth(1200);
             screenGlow.setBlendMode(Phaser.BlendModes.ADD);
 
             // Scanline overlay effect
             const scanlines = this.add.rectangle(MONITOR_X, MONITOR_Y, SCREEN_W, 1, 0xffffff, 0.08);
-            scanlines.setDepth(999);
+            scanlines.setDepth(1200);
 
             // Blinking cursor on screen
             const cursor = this.add.rectangle(MONITOR_X + 8, MONITOR_Y + 6, 6, 2, 0xffffff, 0.7);
-            cursor.setDepth(999);
+            cursor.setDepth(1200);
 
             // Code lines on screen (tiny pixel dots)
             const codeLine1 = this.add.rectangle(MONITOR_X - 12, MONITOR_Y - 8, 18, 2, 0x2ecc71, 0.4);
-            codeLine1.setDepth(999);
+            codeLine1.setDepth(1200);
             const codeLine2 = this.add.rectangle(MONITOR_X - 6, MONITOR_Y - 3, 14, 2, 0x3498db, 0.3);
-            codeLine2.setDepth(999);
+            codeLine2.setDepth(1200);
             const codeLine3 = this.add.rectangle(MONITOR_X - 9, MONITOR_Y + 2, 20, 2, 0xe74c3c, 0.25);
-            codeLine3.setDepth(999);
+            codeLine3.setDepth(1200);
 
             // Store references
             window.monitorScreen = screenGlow;
@@ -5495,7 +5495,7 @@ function toggleBrokerPanel() {
 
             // Make monitor interactive - click area slightly larger than screen
             const monitorHitArea = this.add.rectangle(MONITOR_X, MONITOR_Y + 5, SCREEN_W + 20, SCREEN_H + 30, 0x000000, 0);
-            monitorHitArea.setDepth(1000);
+            monitorHitArea.setDepth(1201);
             monitorHitArea.setInteractive({ useHandCursor: true });
 
             // Click handler: trigger Work state + screen flash effect
