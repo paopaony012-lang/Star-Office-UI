@@ -13,8 +13,16 @@ import subprocess
 import tempfile
 import threading
 import requests
-import google.generativeai as genai
-import pandas as pd
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
+    print("[WARNING] google-generativeai not available, AI features disabled")
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+    print("[WARNING] pandas not available, Excel upload disabled")
 from werkzeug.utils import secure_filename
 from pathlib import Path
 from security_utils import is_production_mode, is_strong_secret, is_strong_drawer_pass
