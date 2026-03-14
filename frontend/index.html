@@ -7,6 +7,7 @@
     <meta name="theme-color" content="#3b82f6">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="stylesheet" href="/static/modern-ui.css">
     <title>Star Office - Pixel Affiliate HQ</title>
     <!-- Google Analytics 4 -->
     <script>
@@ -1437,78 +1438,83 @@
 
             <!-- Tab: Overview Dashboard -->
             <div id="tab-overview" class="affiliate-pane active">
-                <div style="color:#fbbf24; font-size:14px; font-weight:bold; margin-bottom:12px; text-align:center;">📊 แดชบอร์ดสรุปภาพรวมระบบ</div>
-                <div id="overview-cards" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                    <!-- Card: งานค้าง -->
-                    <div style="background:linear-gradient(135deg, #1e3a5f, #0f172a); border:1px solid #3b82f6; border-radius:8px; padding:12px; text-align:center;">
-                        <div style="font-size:22px;">📋</div>
-                        <div id="ov-tasks-pending" style="color:#60a5fa; font-size:20px; font-weight:bold;">-</div>
-                        <div style="color:#94a3b8; font-size:10px;">งานค้างในปฏิทิน</div>
+                <!-- Summary Cards (Premium) -->
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+                    <div class="dash-card">
+                        <div class="card-icon">📋</div>
+                        <div class="card-value" id="ov-tasks" style="color:#38bdf8;">-</div>
+                        <div class="card-label">งานทั้งหมด</div>
                     </div>
-                    <!-- Card: งานเสร็จ -->
-                    <div style="background:linear-gradient(135deg, #064e3b, #0f172a); border:1px solid #10b981; border-radius:8px; padding:12px; text-align:center;">
-                        <div style="font-size:22px;">✅</div>
-                        <div id="ov-tasks-done" style="color:#34d399; font-size:20px; font-weight:bold;">-</div>
-                        <div style="color:#94a3b8; font-size:10px;">งานสำเร็จแล้ว</div>
+                    <div class="dash-card">
+                        <div class="card-icon">✅</div>
+                        <div class="card-value" id="ov-tasks-done" style="color:#34d399;">-</div>
+                        <div class="card-label">งานสำเร็จ</div>
                     </div>
-                    <!-- Card: สินค้าในคลัง -->
-                    <div style="background:linear-gradient(135deg, #4a1942, #0f172a); border:1px solid #ec4899; border-radius:8px; padding:12px; text-align:center;">
-                        <div style="font-size:22px;">🛍️</div>
-                        <div id="ov-products" style="color:#f9a8d4; font-size:20px; font-weight:bold;">-</div>
-                        <div style="color:#94a3b8; font-size:10px;">สินค้าในคลัง</div>
+                    <div class="dash-card">
+                        <div class="card-icon">🛍️</div>
+                        <div class="card-value" id="ov-products" style="color:#f9a8d4;">-</div>
+                        <div class="card-label">สินค้าในคลัง</div>
                     </div>
-                    <!-- Card: Ads Logs -->
-                    <div style="background:linear-gradient(135deg, #713f12, #0f172a); border:1px solid #f59e0b; border-radius:8px; padding:12px; text-align:center;">
-                        <div style="font-size:22px;">🤖</div>
-                        <div id="ov-ads" style="color:#fbbf24; font-size:20px; font-weight:bold;">-</div>
-                        <div style="color:#94a3b8; font-size:10px;">รายการ Ad Logs</div>
+                    <div class="dash-card">
+                        <div class="card-icon">🤖</div>
+                        <div class="card-value" id="ov-ads" style="color:#fbbf24;">-</div>
+                        <div class="card-label">Ad Logs</div>
                     </div>
                 </div>
-                <!-- Trend Chart -->
-                <div style="margin-top:12px; background:#0f172a; border:1px solid #334155; border-radius:6px; padding:10px;">
-                    <div style="color:#e2e8f0; font-size:12px; font-weight:bold; margin-bottom:8px;">📈 แนวโน้มกิจกรรม 7 วันล่าสุด</div>
+
+                <!-- Activity Trend Chart -->
+                <div class="chart-container">
+                    <div class="chart-title">📈 แนวโน้มกิจกรรม 7 วัน</div>
                     <canvas id="ov-trend-chart" height="120"></canvas>
                 </div>
-                <!-- Revenue & ROAS Chart -->
-                <div style="margin-top:12px; background:#0f172a; border:1px solid #f59e0b; border-radius:6px; padding:10px;">
-                    <div style="color:#fbbf24; font-size:12px; font-weight:bold; margin-bottom:8px;">💰 Revenue & ROAS Tracking</div>
-                    <canvas id="ov-revenue-chart" height="120"></canvas>
+
+                <!-- Revenue & ROAS + Distribution Charts -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                    <div class="chart-container" style="margin-top:0;">
+                        <div class="chart-title">💰 Revenue & ROAS</div>
+                        <canvas id="ov-revenue-chart" height="140"></canvas>
+                    </div>
+                    <div class="chart-container" style="margin-top:0;">
+                        <div class="chart-title">📊 สัดส่วนข้อมูล</div>
+                        <canvas id="ov-distribution-chart" height="140"></canvas>
+                    </div>
                 </div>
+
+                <!-- Performance Radar -->
+                <div class="chart-container">
+                    <div class="chart-title">🎯 Performance Radar</div>
+                    <canvas id="ov-radar-chart" height="160"></canvas>
+                </div>
+
                 <!-- Recent Activity -->
-                <div style="margin-top:12px; background:#0f172a; border:1px solid #334155; border-radius:6px; padding:10px;">
-                    <div style="color:#e2e8f0; font-size:12px; font-weight:bold; margin-bottom:8px;">🕐 กิจกรรมล่าสุด</div>
-                    <div id="ov-recent-logs" style="font-size:10px; display:flex; flex-direction:column; gap:4px; color:#94a3b8;">กำลังโหลด...</div>
+                <div class="chart-container">
+                    <div class="chart-title">🕐 กิจกรรมล่าสุด</div>
+                    <div id="ov-recent-logs" style="font-size:11px; display:flex; flex-direction:column; gap:6px; color:var(--text-secondary); font-family:'Noto Sans Thai',sans-serif;">กำลังโหลด...</div>
                 </div>
-                <button onclick="loadOverviewDashboard()" style="width:100%; margin-top:8px; background:#334155; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:11px;">🔄 รีเฟรชข้อมูล</button>
-                <!-- Export + Ad Sync Row -->
-                <div style="display:flex; gap:6px; margin-top:6px;">
-                    <button onclick="exportReportPDF()" style="flex:1; background:#7c3aed; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">📋 Export PDF</button>
-                    <button onclick="exportReportExcel()" style="flex:1; background:#0d9488; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">📊 Export Excel</button>
-                    <button onclick="syncAdPlatformData()" style="flex:1; background:#ea580c; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;" data-role="admin">📡 Sync Ads</button>
-                    <button onclick="showAdvancedAnalytics()" style="flex:1; background:#6366f1; color:#fff; border:none; border-radius:4px; padding:6px; cursor:pointer; font-family:'ArkPixel'; font-size:10px;">📊 Analytics</button>
-                </div>
+
                 <!-- Realtime Indicator -->
-                <div id="realtime-status" style="margin-top:6px; text-align:center; font-size:9px; color:#64748b;">
-                    <span id="realtime-dot" style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#64748b; margin-right:4px;"></span>
-                    <span id="realtime-text">Realtime: กำลังเชื่อมต่อ...</span>
+                <div style="margin-top:8px; text-align:center;">
+                    <div class="realtime-badge">
+                        <div class="dot" id="realtime-dot"></div>
+                        <span id="realtime-text">Realtime: กำลังเชื่อมต่อ...</span>
+                    </div>
                 </div>
-                <!-- Brand Filter + Payment + AI Video -->
-                <div style="display:flex; gap:6px; margin-top:6px;">
-                    <select id="brand-filter" onchange="filterByBrand()" style="flex:1; padding:4px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff; font-family:'ArkPixel'; font-size:9px;">
+
+                <!-- Refresh Button -->
+                <button onclick="loadOverviewDashboard()" class="action-btn" style="width:100%; margin-top:8px; background:var(--bg-card); border:1px solid var(--border-subtle);">🔄 รีเฟรชข้อมูล</button>
+
+                <!-- Action Buttons Grid -->
+                <div class="btn-grid">
+                    <button onclick="exportReportPDF()" class="action-btn" style="background:#7c3aed;">📋 PDF</button>
+                    <button onclick="exportReportExcel()" class="action-btn" style="background:#0d9488;">📊 Excel</button>
+                    <button onclick="syncAdPlatformData()" class="action-btn" style="background:#ea580c;" data-role="admin">📡 Sync</button>
+                    <button onclick="showAdvancedAnalytics()" class="action-btn" style="background:#6366f1;">📊 Analytics</button>
+                </div>
+
+                <div class="btn-grid-3" style="margin-top:6px;">
+                    <select id="brand-filter" onchange="filterByBrand()" style="padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); background:var(--bg-card); color:var(--text-primary); font-family:'Noto Sans Thai',sans-serif; font-size:11px;">
                         <option value="all">🏷️ ทุกแบรนด์</option>
                     </select>
-                    <button onclick="showPaymentDashboard()" style="flex:1; background:#a855f7; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">💳 Payment</button>
-                    <button onclick="generateAIVideo()" style="flex:1; background:#ef4444; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🤖 AI Video</button>
-                </div>
-                <!-- Row 3: Teams + CRM + Forecast + Push -->
-                <div style="display:flex; gap:6px; margin-top:6px;">
-                    <button onclick="showTeamManager()" style="flex:1; background:#0ea5e9; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">👥 ทีม</button>
-                    <button onclick="showCRM()" style="flex:1; background:#f59e0b; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">📇 CRM</button>
-                    <button onclick="showAIForecast()" style="flex:1; background:#10b981; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🔮 Forecast</button>
-                    <button onclick="enablePushNotifications()" style="flex:1; background:#e11d48; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🔔 Push</button>
-                </div>
-                <!-- Row 4: Multi-Shop + Spy + Email + LINE OA -->
-                <div style="display:flex; gap:6px; margin-top:6px;">
                     <button onclick="showMultiShop()" style="flex:1; background:#8b5cf6; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🏪 Multi-Shop</button>
                     <button onclick="showCompetitorTracker()" style="flex:1; background:#dc2626; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">🎯 Spy คู่แข่ง</button>
                     <button onclick="sendEmailDigest()" style="flex:1; background:#6366f1; color:#fff; border:none; border-radius:4px; padding:4px; cursor:pointer; font-family:'ArkPixel'; font-size:9px;">📧 Email</button>
@@ -6396,10 +6402,189 @@ You have access to the team's current data:${context}`;
                     }
                 } catch(re) { console.warn('Revenue chart error:', re); }
                 
+                // --- Distribution Doughnut Chart ---
+                try {
+                    if(typeof Chart !== 'undefined') {
+                        const ctx3 = document.getElementById('ov-distribution-chart');
+                        if(ctx3) {
+                            if(window._ovDistChart) window._ovDistChart.destroy();
+                            const taskCount = parseInt(document.getElementById('ov-tasks')?.textContent) || 0;
+                            const doneCount = parseInt(document.getElementById('ov-tasks-done')?.textContent) || 0;
+                            const productCount = parseInt(document.getElementById('ov-products')?.textContent) || 0;
+                            const adCount = adsLogs ? adsLogs.length : 0;
+                            window._ovDistChart = new Chart(ctx3, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['งานทั้งหมด', 'งานสำเร็จ', 'สินค้า', 'Ads'],
+                                    datasets: [{
+                                        data: [taskCount, doneCount, productCount, adCount],
+                                        backgroundColor: ['#6366f1', '#22c55e', '#ec4899', '#f59e0b'],
+                                        borderColor: 'transparent',
+                                        borderWidth: 0,
+                                        hoverOffset: 8
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    cutout: '65%',
+                                    plugins: {
+                                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 }, padding: 8, usePointStyle: true } }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                } catch(de) { console.warn('Distribution chart error:', de); }
+
+                // --- Performance Radar Chart ---
+                try {
+                    if(typeof Chart !== 'undefined') {
+                        const ctx4 = document.getElementById('ov-radar-chart');
+                        if(ctx4) {
+                            if(window._ovRadarChart) window._ovRadarChart.destroy();
+                            const taskCount = parseInt(document.getElementById('ov-tasks')?.textContent) || 0;
+                            const doneCount = parseInt(document.getElementById('ov-tasks-done')?.textContent) || 0;
+                            const productCount = parseInt(document.getElementById('ov-products')?.textContent) || 0;
+                            const adCount = adsLogs ? adsLogs.length : 0;
+                            const avgRoasVal = adsLogs && adsLogs.length > 0 ? adsLogs.reduce((s,l) => s + parseFloat(l.roas||0), 0) / adsLogs.length : 0;
+                            window._ovRadarChart = new Chart(ctx4, {
+                                type: 'radar',
+                                data: {
+                                    labels: ['งาน', 'สำเร็จ', 'สินค้า', 'Ads', 'ROAS'],
+                                    datasets: [{
+                                        label: 'ภาพรวม',
+                                        data: [
+                                            Math.min(taskCount * 10, 100),
+                                            Math.min(doneCount * 15, 100),
+                                            Math.min(productCount * 10, 100),
+                                            Math.min(adCount * 10, 100),
+                                            Math.min(avgRoasVal * 25, 100)
+                                        ],
+                                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                                        borderColor: '#6366f1',
+                                        pointBackgroundColor: '#6366f1',
+                                        pointBorderColor: '#fff',
+                                        pointRadius: 4
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    scales: {
+                                        r: {
+                                            angleLines: { color: 'rgba(255,255,255,0.05)' },
+                                            grid: { color: 'rgba(255,255,255,0.05)' },
+                                            pointLabels: { color: '#94a3b8', font: { size: 11 } },
+                                            ticks: { display: false },
+                                            suggestedMin: 0, suggestedMax: 100
+                                        }
+                                    },
+                                    plugins: { legend: { display: false } }
+                                }
+                            });
+                        }
+                    }
+                } catch(re) { console.warn('Radar chart error:', re); }
+
+                // Load Kanban
+                renderKanbanBoard();
+                
             } catch(e) {
                 document.getElementById('ov-recent-logs').innerHTML = '<div style="color:#f87171;">โหลดข้อมูลล้มเหลว: ' + e.message + '</div>';
             }
         }
+
+        // =============================================
+        // KANBAN BOARD SYSTEM
+        // =============================================
+        let kanbanTasks = JSON.parse(localStorage.getItem('kanban_tasks') || '[]');
+        
+        function saveKanbanTasks() {
+            localStorage.setItem('kanban_tasks', JSON.stringify(kanbanTasks));
+        }
+        
+        function renderKanbanBoard() {
+            ['todo', 'progress', 'done'].forEach(status => {
+                const container = document.getElementById('kanban-items-' + status);
+                const countEl = document.getElementById('kanban-count-' + status);
+                if(!container) return;
+                
+                const statusTasks = kanbanTasks.filter(t => t.status === status);
+                if(countEl) countEl.textContent = statusTasks.length;
+                
+                container.innerHTML = '';
+                statusTasks.forEach(task => {
+                    const card = document.createElement('div');
+                    card.className = 'kanban-card';
+                    card.draggable = true;
+                    card.dataset.taskId = task.id;
+                    card.ondragstart = (e) => kanbanDragStart(e, task.id);
+                    card.ondragend = (e) => { card.classList.remove('dragging'); };
+                    
+                    const priorityClass = task.priority === 'urgent' ? 'tag-urgent' : task.priority === 'low' ? 'tag-low' : 'tag-normal';
+                    const priorityLabel = task.priority === 'urgent' ? '🔥 เร่งด่วน' : task.priority === 'low' ? '🟢 ต่ำ' : '🔵 ปกติ';
+                    const dateStr = new Date(task.createdAt).toLocaleDateString('th-TH', { day: '2-digit', month: 'short' });
+                    
+                    card.innerHTML = `
+                        <div class="task-title">${task.title}</div>
+                        <div class="task-meta">
+                            <span class="task-tag ${priorityClass}">${priorityLabel}</span>
+                            <span>${dateStr}</span>
+                            <button onclick="deleteKanbanTask('${task.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;" title="ลบ">🗑</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        }
+        
+        function addKanbanTask(status) {
+            const title = prompt('ชื่องาน:');
+            if(!title) return;
+            const priority = prompt('ระดับความสำคัญ (urgent / normal / low):', 'normal') || 'normal';
+            kanbanTasks.push({
+                id: 'kt_' + Date.now(),
+                title,
+                status,
+                priority: ['urgent','normal','low'].includes(priority) ? priority : 'normal',
+                createdAt: new Date().toISOString()
+            });
+            saveKanbanTasks();
+            renderKanbanBoard();
+        }
+        
+        function deleteKanbanTask(id) {
+            if(!confirm('ลบงานนี้?')) return;
+            kanbanTasks = kanbanTasks.filter(t => t.id !== id);
+            saveKanbanTasks();
+            renderKanbanBoard();
+        }
+        
+        function kanbanDragStart(e, taskId) {
+            e.dataTransfer.setData('text/plain', taskId);
+            e.target.classList.add('dragging');
+        }
+        
+        function kanbanDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+        
+        function kanbanDrop(e, newStatus) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const taskId = e.dataTransfer.getData('text/plain');
+            const task = kanbanTasks.find(t => t.id === taskId);
+            if(task) {
+                task.status = newStatus;
+                saveKanbanTasks();
+                renderKanbanBoard();
+            }
+        }
+        
+        // Remove drag-over class when leaving
+        document.addEventListener('dragleave', (e) => {
+            if(e.target.classList) e.target.classList.remove('drag-over');
+        });
 
         // Calendar Logic
         let tasks = [];
