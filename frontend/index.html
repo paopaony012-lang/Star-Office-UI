@@ -1878,38 +1878,39 @@
         <button id="lang-btn-th" onclick="setUILanguage('th')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">TH</button>
     </div>
 
+
     <!-- 🎨 Theme Customizer -->
-    <button class="theme-btn" onclick="toggleThemePanel()">🎨</button>
-    <div id="theme-panel" class="theme-panel">
-        <h3>🎨 เลือกธีม</h3>
-        <div class="theme-option active" onclick="setTheme('default')">
-            <div class="theme-swatch" style="background:linear-gradient(135deg,#6366f1,#ec4899);"></div>
-            <span>⭐ Default (Indigo)</span>
+    <button id="theme-toggle-btn" onclick="toggleThemePanel()" style="position:fixed; bottom:90px; left:12px; z-index:999997; width:44px; height:44px; border-radius:50%; border:2px solid rgba(255,255,255,0.08); background:rgba(30,30,60,0.8); color:#f1f5f9; font-size:20px; cursor:pointer; display:flex; justify-content:center; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.3); backdrop-filter:blur(12px);">🎨</button>
+    <div id="theme-panel" style="display:none; position:fixed; bottom:140px; left:12px; z-index:999998; background:rgba(30,30,60,0.95); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; width:220px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+        <h3 style="font-family:'Noto Sans Thai',sans-serif; font-size:13px; color:#f1f5f9; margin:0 0 12px 0;">🎨 เลือกธีม</h3>
+        <div class="theme-option active" onclick="setTheme('default')" style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer; margin-bottom:4px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.15);">
+            <div style="width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#ec4899); border:2px solid rgba(255,255,255,0.2);"></div>
+            <span style="font-family:'Noto Sans Thai',sans-serif; font-size:12px; color:#f1f5f9;">⭐ Default (Indigo)</span>
         </div>
-        <div class="theme-option" onclick="setTheme('ocean')">
-            <div class="theme-swatch" style="background:linear-gradient(135deg,#64ffda,#0ea5e9);"></div>
-            <span>🌊 Ocean Blue</span>
+        <div class="theme-option" onclick="setTheme('ocean')" style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer; margin-bottom:4px; border:1px solid transparent;">
+            <div style="width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg,#64ffda,#0ea5e9); border:2px solid rgba(255,255,255,0.2);"></div>
+            <span style="font-family:'Noto Sans Thai',sans-serif; font-size:12px; color:#f1f5f9;">🌊 Ocean Blue</span>
         </div>
-        <div class="theme-option" onclick="setTheme('rose')">
-            <div class="theme-swatch" style="background:linear-gradient(135deg,#f472b6,#c084fc);"></div>
-            <span>🌸 Rose Gold</span>
+        <div class="theme-option" onclick="setTheme('rose')" style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer; margin-bottom:4px; border:1px solid transparent;">
+            <div style="width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg,#f472b6,#c084fc); border:2px solid rgba(255,255,255,0.2);"></div>
+            <span style="font-family:'Noto Sans Thai',sans-serif; font-size:12px; color:#f1f5f9;">🌸 Rose Gold</span>
         </div>
     </div>
 
     <!-- 🔔 Notification Center -->
-    <button class="noti-btn" onclick="toggleNotiPanel()">
+    <button id="noti-toggle-btn" onclick="toggleNotiPanel()" style="position:fixed; top:calc(env(safe-area-inset-top, 0px) + 12px); right:60px; z-index:999997; width:40px; height:40px; border-radius:8px; border:2px solid rgba(255,255,255,0.08); background:rgba(30,30,60,0.8); color:#f1f5f9; font-size:18px; cursor:pointer; display:flex; justify-content:center; align-items:center; backdrop-filter:blur(12px);">
         🔔
-        <div class="noti-badge" id="noti-badge" style="display:none;">0</div>
+        <div id="noti-badge" style="display:none; position:absolute; top:-4px; right:-4px; width:16px; height:16px; border-radius:50%; background:#ef4444; color:white; font-size:9px; font-weight:700; justify-content:center; align-items:center;">0</div>
     </button>
-    <div id="noti-panel" class="noti-panel">
-        <div class="noti-panel-header">
-            <h3>🔔 ศูนย์แจ้งเตือน</h3>
+    <div id="noti-panel" style="display:none; position:fixed; top:0; right:0; z-index:999999; width:350px; height:100vh; background:rgba(26,26,53,0.98); border-left:1px solid rgba(255,255,255,0.08); box-shadow:-8px 0 32px rgba(0,0,0,0.5); flex-direction:column; overflow:hidden; backdrop-filter:blur(20px);">
+        <div style="padding:16px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-family:'Noto Sans Thai',sans-serif; font-size:15px; color:#f1f5f9; margin:0;">🔔 ศูนย์แจ้งเตือน</h3>
             <div style="display:flex; gap:6px;">
                 <button onclick="clearAllNotifications()" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#94a3b8; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:10px; font-family:'Noto Sans Thai',sans-serif;">🗑 ล้าง</button>
                 <button onclick="toggleNotiPanel()" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#94a3b8; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:14px;">✕</button>
             </div>
         </div>
-        <div class="noti-panel-body" id="noti-list">
+        <div id="noti-list" style="flex:1; overflow-y:auto; padding:12px;">
             <div style="text-align:center; padding:40px 0; color:#64748b; font-family:'Noto Sans Thai',sans-serif; font-size:12px;">
                 ✅ ไม่มีการแจ้งเตือนใหม่
             </div>
@@ -1919,7 +1920,8 @@
     <script>
         // Theme Customizer
         function toggleThemePanel() {
-            document.getElementById('theme-panel').classList.toggle('open');
+            const p = document.getElementById('theme-panel');
+            p.style.display = p.style.display === 'block' ? 'none' : 'block';
         }
         function setTheme(theme) {
             if(theme === 'default') {
@@ -1928,8 +1930,12 @@
                 document.documentElement.setAttribute('data-theme', theme);
             }
             localStorage.setItem('star-office-theme', theme);
-            document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            document.querySelectorAll('.theme-option').forEach(el => {
+                el.style.background = 'transparent';
+                el.style.borderColor = 'transparent';
+            });
+            event.currentTarget.style.background = 'rgba(99,102,241,0.15)';
+            event.currentTarget.style.borderColor = 'rgba(99,102,241,0.3)';
             toggleThemePanel();
         }
         // Load saved theme
@@ -1941,7 +1947,9 @@
         // Notification Center
         let notifications = JSON.parse(localStorage.getItem('star-noti') || '[]');
         function toggleNotiPanel() {
-            document.getElementById('noti-panel').classList.toggle('open');
+            const p = document.getElementById('noti-panel');
+            const isOpen = p.style.display === 'flex';
+            p.style.display = isOpen ? 'none' : 'flex';
         }
         function addNotification(title, body, icon) {
             notifications.unshift({
