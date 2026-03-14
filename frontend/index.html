@@ -1241,6 +1241,7 @@
             <input type="password" id="auth-password" placeholder="Password" />
             <button class="btn-login" onclick="authLogin()">🔑 เข้าสู่ระบบ</button>
             <button class="btn-signup" onclick="authSignup()">📝 สมัครสมาชิกใหม่</button>
+            <button onclick="authAdminLogin()" style="width:100%; padding:12px; border:2px solid #f59e0b; border-radius:8px; background:linear-gradient(135deg,#f59e0b,#ea580c); color:#fff; font-family:'ArkPixel','Noto Sans Thai',sans-serif; font-size:14px; font-weight:bold; cursor:pointer; margin-top:6px;">👑 เข้าระบบ Admin (รหัส PIN)</button>
             <button class="btn-guest" onclick="authGuestMode()">เข้าแบบผู้เยี่ยมชม (ไม่บันทึกข้อมูล)</button>
             <div id="login-error"></div>
         </div>
@@ -2029,6 +2030,22 @@
                 errEl.innerHTML = '<span style="color:#4ade80;">สมัครสำเร็จ! เช็ค Email เพื่อยืนยันก่อนล็อกอิน</span>';
             } else {
                 showApp(data.user.email);
+            }
+        }
+        
+        function authAdminLogin() {
+            const errEl = document.getElementById('login-error');
+            const passwordField = document.getElementById('auth-password').value.trim();
+            const pin = passwordField || prompt('กรุณาใส่รหัส Admin PIN:');
+            if(!pin) { errEl.textContent = 'กรุณาใส่รหัส PIN'; return; }
+            if(pin === '4789') {
+                showApp('Admin (PIN Login)');
+                window._userRole = 'admin';
+                document.getElementById('user-email').textContent = '👑 Admin — Star Office';
+                document.querySelectorAll('[data-role="admin"]').forEach(el => { el.style.display = ''; });
+                errEl.textContent = '';
+            } else {
+                errEl.textContent = '❌ รหัส PIN ไม่ถูกต้อง';
             }
         }
         
