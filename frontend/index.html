@@ -1293,14 +1293,30 @@
         <div id="control-bar">
             <div id="control-bar-title">สถานะ Star</div>
             <div id="control-buttons">
-                <button id="btn-state-idle" onclick="setState('idle','สแตนด์บาย')">สแตนด์บาย</button>
-                <button id="btn-state-writing" onclick="setState('writing','กำลังทำงาน')">ทำงาน</button>
-                <button id="btn-state-syncing" onclick="setState('syncing','กำลังซิงค์')">ซิงค์</button>
-                <button id="btn-state-error" onclick="setState('error','แจ้งเตือน')">แจ้งเตือน</button>
-                <button id="btn-open-drawer" onclick="toggleAssetDrawer()" style="grid-column:1/3;">ตกแต่งห้อง</button>
-                <button id="btn-open-agents" onclick="toggleAgentsDrawer()" style="grid-column:3/-1; background:#3b82f6; color:#fff; border-color:#60a5fa; font-weight:700;">ดูทีมงานเชี่ยวชาญ (Agent)</button>
-                <button id="btn-open-affiliate" onclick="toggleAffiliateDrawer()" style="grid-column:1/-1; background:#10b981; color:#fff; border-color:#34d399; font-weight:700;">💰 เครื่องมือระบบผลิตรัน SEO & Affiliate</button>
-                <button id="btn-open-notice" onclick="toggleNoticeBoard()" style="grid-column:1/-1; background:#f59e0b; color:#111; border-color:#fcd34d; font-weight:700;">📌 กระดานข่าวสารออฟฟิศ (Activity Logs)</button>
+                <button id="btn-state-idle" onclick="setState('idle','พักผ่อน — พร้อมรับงานใหม่')" title="สแตนด์บาย: Star พร้อมรับคำสั่ง" style="background:linear-gradient(135deg,#334155,#1e293b);border-color:#475569;">
+                    ☕ สแตนด์บาย
+                </button>
+                <button id="btn-state-writing" onclick="setState('writing','กำลังเขียนโค้ด / สร้างคอนเทนต์')" title="ทำงาน: Star นั่งทำงานที่โต๊ะ" style="background:linear-gradient(135deg,#166534,#14532d);border-color:#22c55e;color:#bbf7d0;">
+                    💻 ทำงาน
+                </button>
+                <button id="btn-state-syncing" onclick="setState('syncing','กำลังซิงค์ข้อมูล / อัพโหลด')" title="ซิงค์: อัพเดตข้อมูล" style="background:linear-gradient(135deg,#1e3a5f,#172554);border-color:#3b82f6;color:#93c5fd;">
+                    🔄 ซิงค์
+                </button>
+                <button id="btn-state-error" onclick="setState('error','ตรวจพบปัญหา — กำลังแก้ไข')" title="แจ้งเตือน: แจ้ง Error / ดีบัก" style="background:linear-gradient(135deg,#7f1d1d,#450a0a);border-color:#ef4444;color:#fca5a5;">
+                    🚨 แจ้งเตือน
+                </button>
+                <button id="btn-open-drawer" onclick="toggleAssetDrawer()" style="grid-column:1/3; background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-color:#fbbf24;font-weight:700;">
+                    🎨 ตกแต่งห้อง
+                </button>
+                <button id="btn-open-agents" onclick="toggleAgentsDrawer()" style="grid-column:3/-1; background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; border-color:#60a5fa; font-weight:700;">
+                    👥 ดูทีมงานเชี่ยวชาญ (Agent)
+                </button>
+                <button id="btn-open-affiliate" onclick="toggleAffiliateDrawer()" style="grid-column:1/-1; background:linear-gradient(135deg,#10b981,#059669); color:#fff; border-color:#34d399; font-weight:700; font-size:13px;">
+                    💰 เครื่องมือ SEO & Affiliate
+                </button>
+                <button id="btn-open-notice" onclick="toggleNoticeBoard()" style="grid-column:1/-1; background:linear-gradient(135deg,#f59e0b,#ea580c); color:#fff; border-color:#fcd34d; font-weight:700;">
+                    📌 กระดานข่าวสาร (Activity Logs)
+                </button>
             </div>
         </div>
 
@@ -1418,48 +1434,83 @@
 
     <!-- Affiliate Drawer -->
     <aside id="affiliate-drawer">
-        <div id="affiliate-drawer-header" style="background:#0b1220; border-bottom:1px solid rgba(148,163,184,0.22); display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:#ecfdf5; font-size:15px; padding:12px;">💰 เครื่องมือ SEO & Affiliate</span>
-            <button onclick="toggleAffiliateDrawer(false)" style="margin-right:12px; border:1px solid rgba(148,163,184,0.24); background:#1f2937; color:#fff; border-radius:6px; padding:4px 8px; cursor:pointer; font-family: 'ArkPixel', monospace;">ปิด</button>
+        <div id="affiliate-drawer-header" style="background:linear-gradient(135deg,#0f172a,#1e293b); border-bottom:2px solid #10b981; display:flex; justify-content:space-between; align-items:center; padding:0;">
+            <div style="display:flex; align-items:center; gap:10px; padding:12px 16px;">
+                <span style="font-size:22px;">💰</span>
+                <div>
+                    <div style="color:#10b981; font-size:14px; font-weight:bold; font-family:'ArkPixel',monospace;">SEO & Affiliate Hub</div>
+                    <div style="color:#64748b; font-size:10px; font-family:'Noto Sans Thai',sans-serif;">ศูนย์รวมเครื่องมือสร้างรายได้</div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding-right:12px;">
+                <div style="background:#0f4c35; border:1px solid #10b981; border-radius:4px; padding:2px 8px; color:#34d399; font-size:9px; font-family:'ArkPixel';">● LIVE</div>
+                <button onclick="toggleAffiliateDrawer(false)" style="border:1px solid #334155; background:#1f2937; color:#94a3b8; border-radius:6px; padding:4px 10px; cursor:pointer; font-family:'ArkPixel',monospace; font-size:11px; transition:all 0.2s;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#334155';this.style.color='#94a3b8'">✕ ปิด</button>
+            </div>
         </div>
-        <div id="affiliate-body" style="padding:16px; overflow-y:auto; flex:1; display:flex; flex-direction:column;">
+        <div id="affiliate-body" style="padding:12px 16px; overflow-y:auto; flex:1; display:flex; flex-direction:column;">
             
-            <div class="affiliate-tabs" style="display:flex; gap:2px; margin-bottom:12px; border-bottom:1px solid #334155; padding-bottom:4px; overflow-x:auto; white-space:nowrap;">
-                <div class="affiliate-tab active" onclick="switchAffiliateTab('overview')" style="font-size:11px; padding:6px 10px;">📊 Overview</div>
-                <div class="affiliate-tab" onclick="switchAffiliateTab('script')" style="font-size:11px; padding:6px 10px;">🎬 สคริปต์</div>
-                <div class="affiliate-tab" onclick="switchAffiliateTab('trends')" style="font-size:11px; padding:6px 10px;">🕷️ เทรนด์</div>
-                <div class="affiliate-tab" onclick="switchAffiliateTab('calendar')" style="font-size:11px; padding:6px 10px;">📅 ปฏิทิน</div>
-                <div class="affiliate-tab" onclick="switchAffiliateTab('analytics')" style="font-size:11px; padding:6px 10px;">📊 ยอดขาย</div>
-                <div class="affiliate-tab" onclick="switchAffiliateTab('spy')" style="font-size:11px; padding:6px 10px;">🕵️ สายลับ</div>
-                <div class="affiliate-tab" onclick="switchAffiliateTab('ads')" style="font-size:11px; padding:6px 10px;">🤖 ยิงแอด</div>
-                <div class="affiliate-tab" onclick="switchAffiliateTab('inventory')" style="font-size:11px; padding:6px 10px;">🛍️ คลังสินค้า</div>
-                <div class="affiliate-tab" onclick="switchAffiliateTab('fleet')" style="font-size:11px; padding:6px 10px;">🏢 คุมทีม</div>
-                <div class="affiliate-tab" onclick="switchAffiliateTab('apikeys')" style="font-size:11px; padding:6px 10px;" data-role="admin">⚙️ ตั้งค่า</div>
+            <!-- Premium Tab Bar -->
+            <div class="affiliate-tabs" style="display:flex; gap:2px; margin-bottom:14px; background:#0f172a; border-radius:8px; padding:4px; overflow-x:auto; white-space:nowrap; border:1px solid #1e293b;">
+                <div class="affiliate-tab active" onclick="switchAffiliateTab('overview')" style="border-radius:6px; transition:all 0.2s;">📊 Overview</div>
+                <div class="affiliate-tab" onclick="switchAffiliateTab('script')" style="border-radius:6px; transition:all 0.2s;">🎬 สคริปต์</div>
+                <div class="affiliate-tab" onclick="switchAffiliateTab('trends')" style="border-radius:6px; transition:all 0.2s;">🔥 เทรนด์</div>
+                <div class="affiliate-tab" onclick="switchAffiliateTab('calendar')" style="border-radius:6px; transition:all 0.2s;">📅 ปฏิทิน</div>
+                <div class="affiliate-tab" onclick="switchAffiliateTab('analytics')" style="border-radius:6px; transition:all 0.2s;">📈 ยอดขาย</div>
+                <div class="affiliate-tab" onclick="switchAffiliateTab('spy')" style="border-radius:6px; transition:all 0.2s;">🕵️ สายลับ</div>
+                <div class="affiliate-tab" onclick="switchAffiliateTab('ads')" style="border-radius:6px; transition:all 0.2s;">🎯 ยิงแอด</div>
+                <div class="affiliate-tab" onclick="switchAffiliateTab('inventory')" style="border-radius:6px; transition:all 0.2s;">🛍️ คลัง</div>
+                <div class="affiliate-tab" onclick="switchAffiliateTab('fleet')" style="border-radius:6px; transition:all 0.2s;">🏢 ทีม</div>
+                <div class="affiliate-tab" onclick="switchAffiliateTab('apikeys')" style="border-radius:6px; transition:all 0.2s;" data-role="admin">⚙️ ตั้งค่า</div>
             </div>
 
             <!-- Tab: Overview Dashboard -->
             <div id="tab-overview" class="affiliate-pane active">
-                <!-- Summary Cards (Premium) -->
-                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
-                    <div class="dash-card">
+                <!-- Summary Cards -->
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px;">
+                    <div class="dash-card" style="cursor:pointer;" onclick="switchAffiliateTab('calendar')" title="ดูงานทั้งหมด">
                         <div class="card-icon">📋</div>
                         <div class="card-value" id="ov-tasks" style="color:#38bdf8;">-</div>
                         <div class="card-label">งานทั้งหมด</div>
                     </div>
-                    <div class="dash-card">
+                    <div class="dash-card" style="cursor:pointer;" onclick="switchAffiliateTab('calendar')" title="ดูงานสำเร็จ">
                         <div class="card-icon">✅</div>
                         <div class="card-value" id="ov-tasks-done" style="color:#34d399;">-</div>
                         <div class="card-label">งานสำเร็จ</div>
                     </div>
-                    <div class="dash-card">
+                    <div class="dash-card" style="cursor:pointer;" onclick="switchAffiliateTab('inventory')" title="คลังสินค้า">
                         <div class="card-icon">🛍️</div>
                         <div class="card-value" id="ov-products" style="color:#f9a8d4;">-</div>
                         <div class="card-label">สินค้าในคลัง</div>
                     </div>
-                    <div class="dash-card">
+                    <div class="dash-card" style="cursor:pointer;" onclick="switchAffiliateTab('ads')" title="Ad Logs">
                         <div class="card-icon">🤖</div>
                         <div class="card-value" id="ov-ads" style="color:#fbbf24;">-</div>
                         <div class="card-label">Ad Logs</div>
+                    </div>
+                </div>
+
+                <!-- Quick Launch Tools — REAL WORKING BUTTONS -->
+                <div style="background:linear-gradient(135deg,#0f2027,#203a43,#2c5364); border:1px solid #1e3a5f; border-radius:10px; padding:12px; margin-bottom:12px;">
+                    <div style="color:#38bdf8; font-size:11px; font-weight:bold; margin-bottom:8px; font-family:'ArkPixel';">🚀 Quick Launch — เปิดเครื่องมือได้เลย</div>
+                    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px;">
+                        <button onclick="window.open('https://trends.google.com/trends/?geo=TH','_blank')" style="background:#1a56db; color:#fff; border:none; border-radius:6px; padding:8px 4px; cursor:pointer; font-family:'ArkPixel'; font-size:10px; transition:all 0.2s;" onmouseover="this.style.background='#1e40af'" onmouseout="this.style.background='#1a56db'">
+                            📊 Google Trends
+                        </button>
+                        <button onclick="window.open('https://kalodata.com/explore','_blank')" style="background:#7c3aed; color:#fff; border:none; border-radius:6px; padding:8px 4px; cursor:pointer; font-family:'ArkPixel'; font-size:10px; transition:all 0.2s;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'">
+                            🦋 Kalodata
+                        </button>
+                        <button onclick="window.open('https://www.tiktok.com/business/en','_blank')" style="background:#010101; color:#fff; border:1px solid #333; border-radius:6px; padding:8px 4px; cursor:pointer; font-family:'ArkPixel'; font-size:10px; transition:all 0.2s;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='#010101'">
+                            🎵 TikTok Ads
+                        </button>
+                        <button onclick="window.open('https://www.facebook.com/adsmanager','_blank')" style="background:#1877f2; color:#fff; border:none; border-radius:6px; padding:8px 4px; cursor:pointer; font-family:'ArkPixel'; font-size:10px; transition:all 0.2s;" onmouseover="this.style.background='#0e61d4'" onmouseout="this.style.background='#1877f2'">
+                            📘 Meta Ads
+                        </button>
+                        <button onclick="window.open('https://seller.shopee.co.th','_blank')" style="background:#f04f36; color:#fff; border:none; border-radius:6px; padding:8px 4px; cursor:pointer; font-family:'ArkPixel'; font-size:10px; transition:all 0.2s;" onmouseover="this.style.background='#d63b24'" onmouseout="this.style.background='#f04f36'">
+                            🛒 Shopee Seller
+                        </button>
+                        <button onclick="window.open('https://chat.openai.com','_blank')" style="background:#10a37f; color:#fff; border:none; border-radius:6px; padding:8px 4px; cursor:pointer; font-family:'ArkPixel'; font-size:10px; transition:all 0.2s;" onmouseover="this.style.background='#0d8a6b'" onmouseout="this.style.background='#10a37f'">
+                            🤖 ChatGPT
+                        </button>
                     </div>
                 </div>
 
@@ -1505,7 +1556,7 @@
                 <button onclick="loadOverviewDashboard()" class="action-btn" style="width:100%; margin-top:8px; background:var(--bg-card); border:1px solid var(--border-subtle);">🔄 รีเฟรชข้อมูล</button>
 
                 <!-- Action Buttons Grid -->
-                <div class="btn-grid">
+                <div class="btn-grid" style="margin-top:8px;">
                     <button onclick="exportReportPDF()" class="action-btn" style="background:#7c3aed;">📋 PDF</button>
                     <button onclick="exportReportExcel()" class="action-btn" style="background:#0d9488;">📊 Excel</button>
                     <button onclick="syncAdPlatformData()" class="action-btn" style="background:#ea580c;" data-role="admin">📡 Sync</button>
