@@ -102,6 +102,7 @@
     font-weight: 800;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     text-align: center;
     margin-bottom: 8px;
@@ -501,4 +502,347 @@ button, input, select, .dash-card, .kanban-card {
     background: var(--accent-blue);
     color: white;
     font-weight: 600;
+}
+
+/* Fix background-clip compatibility */
+.modern-login-card h1 {
+    background-clip: text;
+}
+
+/* ==========================================
+   THEME CUSTOMIZER
+   ========================================== */
+.theme-btn {
+    position: fixed;
+    bottom: 90px;
+    left: 12px;
+    z-index: 999997;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--border-subtle);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.theme-btn:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-glow);
+}
+
+.theme-panel {
+    position: fixed;
+    bottom: 140px;
+    left: 12px;
+    z-index: 999998;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    width: 220px;
+    box-shadow: var(--shadow-lg);
+    display: none;
+    animation: fadeInUp 0.3s ease;
+}
+
+.theme-panel.open { display: block; }
+
+.theme-panel h3 {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 4px;
+    border: 1px solid transparent;
+}
+
+.theme-option:hover {
+    background: var(--bg-glass);
+    border-color: var(--border-subtle);
+}
+
+.theme-option.active {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: var(--accent-blue);
+}
+
+.theme-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+.theme-option span {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 12px;
+    color: var(--text-primary);
+}
+
+/* Theme: Ocean Blue */
+[data-theme="ocean"] {
+    --bg-primary: #0a192f;
+    --bg-secondary: #112240;
+    --bg-card: rgba(17, 34, 64, 0.8);
+    --accent-blue: #64ffda;
+    --accent-purple: #8892b0;
+    --gradient-primary: linear-gradient(135deg, #64ffda, #0ea5e9, #6366f1);
+}
+
+/* Theme: Rose Gold */
+[data-theme="rose"] {
+    --bg-primary: #1a0a1e;
+    --bg-secondary: #2d1233;
+    --bg-card: rgba(45, 18, 51, 0.8);
+    --accent-blue: #f472b6;
+    --accent-purple: #c084fc;
+    --gradient-primary: linear-gradient(135deg, #f472b6, #c084fc, #818cf8);
+}
+
+/* ==========================================
+   NOTIFICATION CENTER
+   ========================================== */
+.noti-btn {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    right: 60px;
+    z-index: 999997;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border-subtle);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.noti-btn:hover { background: var(--bg-glass); }
+
+.noti-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-red);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: pulse 2s infinite;
+}
+
+.noti-panel {
+    position: fixed;
+    top: 0;
+    right: -360px;
+    z-index: 999999;
+    width: 350px;
+    height: 100vh;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-subtle);
+    box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+    transition: right 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.noti-panel.open { right: 0; }
+
+.noti-panel-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.noti-panel-header h3 {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.noti-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.noti-item {
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    margin-bottom: 8px;
+    transition: var(--transition);
+}
+
+.noti-item:hover {
+    border-color: var(--accent-blue);
+}
+
+.noti-item .noti-title {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.noti-item .noti-time {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.noti-item .noti-body {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE
+   ========================================== */
+@media (max-width: 1400px) {
+    #main-stage, #bottom-panels {
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+    #game-container {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16/9 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+    
+    #main-stage, #bottom-panels {
+        width: 100% !important;
+    }
+    
+    #game-container {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16/9 !important;
+        border-radius: 0 !important;
+    }
+    
+    #bottom-panels {
+        flex-direction: column !important;
+        padding: 8px !important;
+    }
+    
+    #memo-panel, #control-bar, #guest-agent-panel {
+        width: 100% !important;
+        height: auto !important;
+        min-height: unset !important;
+    }
+    
+    /* Affiliate drawer full-screen on mobile */
+    #affiliate-drawer {
+        width: 100vw !important;
+        right: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    .btn-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .btn-grid-3 {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .kanban-board {
+        flex-direction: column !important;
+        padding: 8px !important;
+    }
+    
+    .kanban-column {
+        min-width: unset !important;
+    }
+    
+    /* Chart containers side by side → stack */
+    .chart-container {
+        margin-top: 8px !important;
+    }
+    
+    /* Login box */
+    #login-box {
+        width: 90vw !important;
+        max-width: 360px !important;
+        padding: 20px !important;
+    }
+    
+    /* Notification panel */
+    .noti-panel {
+        width: 100vw !important;
+    }
+    
+    /* Theme panel */
+    .theme-panel {
+        bottom: auto !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+    }
+    
+    /* Chat window */
+    #retro-chat-window {
+        width: calc(100vw - 20px) !important;
+        right: 10px !important;
+        bottom: 80px !important;
+        height: 60vh !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .dash-card .card-icon { font-size: 20px; }
+    .dash-card .card-value { font-size: 18px; }
+    .dash-card .card-label { font-size: 9px; }
+    
+    .action-btn { font-size: 10px; padding: 8px 4px; }
+    
+    .kanban-card .task-title { font-size: 12px; }
+    
+    .chart-title { font-size: 11px; }
+    
+    #retro-chat-btn {
+        width: 48px !important;
+        height: 48px !important;
+    }
 }

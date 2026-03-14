@@ -1878,6 +1878,119 @@
         <button id="lang-btn-th" onclick="setUILanguage('th')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">TH</button>
     </div>
 
+    <!-- 🎨 Theme Customizer -->
+    <button class="theme-btn" onclick="toggleThemePanel()">🎨</button>
+    <div id="theme-panel" class="theme-panel">
+        <h3>🎨 เลือกธีม</h3>
+        <div class="theme-option active" onclick="setTheme('default')">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#6366f1,#ec4899);"></div>
+            <span>⭐ Default (Indigo)</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('ocean')">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#64ffda,#0ea5e9);"></div>
+            <span>🌊 Ocean Blue</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('rose')">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#f472b6,#c084fc);"></div>
+            <span>🌸 Rose Gold</span>
+        </div>
+    </div>
+
+    <!-- 🔔 Notification Center -->
+    <button class="noti-btn" onclick="toggleNotiPanel()">
+        🔔
+        <div class="noti-badge" id="noti-badge" style="display:none;">0</div>
+    </button>
+    <div id="noti-panel" class="noti-panel">
+        <div class="noti-panel-header">
+            <h3>🔔 ศูนย์แจ้งเตือน</h3>
+            <div style="display:flex; gap:6px;">
+                <button onclick="clearAllNotifications()" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#94a3b8; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:10px; font-family:'Noto Sans Thai',sans-serif;">🗑 ล้าง</button>
+                <button onclick="toggleNotiPanel()" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#94a3b8; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:14px;">✕</button>
+            </div>
+        </div>
+        <div class="noti-panel-body" id="noti-list">
+            <div style="text-align:center; padding:40px 0; color:#64748b; font-family:'Noto Sans Thai',sans-serif; font-size:12px;">
+                ✅ ไม่มีการแจ้งเตือนใหม่
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Customizer
+        function toggleThemePanel() {
+            document.getElementById('theme-panel').classList.toggle('open');
+        }
+        function setTheme(theme) {
+            if(theme === 'default') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+            localStorage.setItem('star-office-theme', theme);
+            document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            toggleThemePanel();
+        }
+        // Load saved theme
+        const savedTheme = localStorage.getItem('star-office-theme');
+        if(savedTheme && savedTheme !== 'default') {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        // Notification Center
+        let notifications = JSON.parse(localStorage.getItem('star-noti') || '[]');
+        function toggleNotiPanel() {
+            document.getElementById('noti-panel').classList.toggle('open');
+        }
+        function addNotification(title, body, icon) {
+            notifications.unshift({
+                id: 'n_' + Date.now(),
+                title: title,
+                body: body,
+                icon: icon || '📌',
+                time: new Date().toISOString(),
+                read: false
+            });
+            if(notifications.length > 50) notifications.pop();
+            localStorage.setItem('star-noti', JSON.stringify(notifications));
+            renderNotifications();
+        }
+        function clearAllNotifications() {
+            notifications = [];
+            localStorage.setItem('star-noti', JSON.stringify(notifications));
+            renderNotifications();
+        }
+        function renderNotifications() {
+            const container = document.getElementById('noti-list');
+            const badge = document.getElementById('noti-badge');
+            const unread = notifications.filter(n => !n.read).length;
+            if(badge) {
+                badge.style.display = unread > 0 ? 'flex' : 'none';
+                badge.textContent = unread;
+            }
+            if(!container) return;
+            if(notifications.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px 0; color:#64748b; font-family:\'Noto Sans Thai\',sans-serif; font-size:12px;">✅ ไม่มีการแจ้งเตือนใหม่</div>';
+                return;
+            }
+            container.innerHTML = notifications.map(n => {
+                const timeStr = new Date(n.time).toLocaleString('th-TH', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
+                return `<div class="noti-item" onclick="this.style.opacity='0.6'">
+                    <div class="noti-title">${n.icon} ${n.title}</div>
+                    <div class="noti-time">${timeStr}</div>
+                    <div class="noti-body">${n.body}</div>
+                </div>`;
+            }).join('');
+        }
+        renderNotifications();
+        // Auto-add welcome notification on first visit
+        if(!localStorage.getItem('star-noti-welcomed')) {
+            addNotification('ยินดีต้อนรับ!', 'Star Office พร้อมใช้งานแล้ว กดปุ่ม 🔔 เพื่อดูแจ้งเตือนทั้งหมด', '🌟');
+            localStorage.setItem('star-noti-welcomed', '1');
+        }
+    </script>
+
     <!-- 🤖 8-Bit Retro Agent Chatbot UI -->
     <div id="retro-chat-btn" onclick="toggleRetroChat()" style="position:fixed; bottom:20px; right:20px; z-index:999998; width:60px; height:60px; background:#4ade80; border:4px solid #166534; border-radius:8px; cursor:pointer; display:flex; justify-content:center; align-items:center; box-shadow: 4px 4px 0px rgba(0,0,0,0.5); transition: transform 0.1s;">
         <span style="font-size:32px;">💬</span>
@@ -2033,21 +2146,53 @@
             }
         }
         
-        function authAdminLogin() {
+        async function authAdminLogin() {
             const errEl = document.getElementById('login-error');
             const passwordField = document.getElementById('auth-password').value.trim();
             const pin = passwordField || prompt('กรุณาใส่รหัส Admin PIN:');
             if(!pin) { errEl.textContent = 'กรุณาใส่รหัส PIN'; return; }
-            if(pin === '4789') {
-                showApp('Admin (PIN Login)');
-                window._userRole = 'admin';
-                document.getElementById('user-email').textContent = '👑 Admin — Star Office';
-                document.querySelectorAll('[data-role="admin"]').forEach(el => { el.style.display = ''; });
-                errEl.textContent = '';
-            } else {
-                errEl.textContent = '❌ รหัส PIN ไม่ถูกต้อง';
+            
+            errEl.textContent = 'กำลังตรวจสอบ...';
+            try {
+                const res = await fetch('/api/admin/verify-pin', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin })
+                });
+                const data = await res.json();
+                if(data.ok) {
+                    showApp('Admin (PIN Login)');
+                    window._userRole = 'admin';
+                    document.getElementById('user-email').textContent = '👑 Admin — Star Office';
+                    document.querySelectorAll('[data-role="admin"]').forEach(el => { el.style.display = ''; });
+                    errEl.textContent = '';
+                } else {
+                    errEl.textContent = '❌ ' + (data.error || 'รหัส PIN ไม่ถูกต้อง');
+                }
+            } catch(e) {
+                errEl.textContent = '❌ เชื่อมต่อ server ไม่ได้';
             }
         }
+        
+        // Global Error Monitoring
+        window.onerror = function(msg, source, line, col, error) {
+            try {
+                fetch('/api/log-error', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: msg, source: source + ':' + line + ':' + col, stack: error?.stack || '', url: location.href })
+                });
+            } catch(e) {}
+        };
+        window.addEventListener('unhandledrejection', function(e) {
+            try {
+                fetch('/api/log-error', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: 'Unhandled Promise: ' + (e.reason?.message || e.reason), source: 'promise', stack: e.reason?.stack || '', url: location.href })
+                });
+            } catch(ex) {}
+        });
         
         function authGuestMode() {
             showApp('ผู้เยี่ยมชม (Guest)');

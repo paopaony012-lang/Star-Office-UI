@@ -261,6 +261,52 @@ ensure_electron_standalone_snapshot()
 
 _INDEX_HTML_CACHE = None
 
+# Admin PIN - stored server-side only (set via ADMIN_PIN env var)
+ADMIN_PIN = os.getenv("ADMIN_PIN", "4789")
+
+# Error log storage
+_error_logs = []
+_error_logs_lock = threading.Lock()
+
+
+@app.route("/api/admin/verify-pin", methods=["POST"])
+def verify_admin_pin():
+    """Verify admin PIN server-side - never expose the PIN to client"""
+    data = request.get_json(silent=True) or {}
+    pin = str(data.get("pin", "")).strip()
+    if not pin:
+        return jsonify({"ok": False, "error": "กรุณาใส่รหัส PIN"}), 400
+    if pin == ADMIN_PIN:
+        return jsonify({"ok": True, "role": "admin", "message": "เข้าสู่ระบบ Admin สำเร็จ"})
+    return jsonify({"ok": False, "error": "รหัส PIN ไม่ถูกต้อง"}), 401
+
+
+@app.route("/api/log-error", methods=["POST"])
+def log_frontend_error():
+    """Collect frontend error logs for monitoring"""
+    data = request.get_json(silent=True) or {}
+    error_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "message": data.get("message", "unknown"),
+        "source": data.get("source", "frontend"),
+        "stack": data.get("stack", ""),
+        "url": data.get("url", ""),
+        "userAgent": request.headers.get("User-Agent", "")
+    }
+    with _error_logs_lock:
+        _error_logs.append(error_entry)
+        if len(_error_logs) > 500:
+            _error_logs.pop(0)
+    print(f"[ERROR LOG] {error_entry['source']}: {error_entry['message']}")
+    return jsonify({"ok": True})
+
+
+@app.route("/api/admin/error-logs", methods=["GET"])
+def get_error_logs():
+    """Get recent error logs (admin only)"""
+    with _error_logs_lock:
+        return jsonify({"logs": _error_logs[-50:]})
+
 
 @app.route("/", methods=["GET"])
 def index():
