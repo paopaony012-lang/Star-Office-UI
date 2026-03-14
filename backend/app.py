@@ -114,7 +114,7 @@ _bg_tasks_lock = threading.Lock()
 
 # Generate a version timestamp once at server startup for cache busting
 VERSION_TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
-ASSET_DRAWER_PASS_DEFAULT = os.getenv("ASSET_DRAWER_PASS", "1234")
+ASSET_DRAWER_PASS_DEFAULT = os.getenv("ASSET_DRAWER_PASS", os.getenv("ADMIN_PIN", "4789"))
 
 if is_production_mode():
     hardening_errors = []

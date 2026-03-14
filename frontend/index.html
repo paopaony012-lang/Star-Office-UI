@@ -5417,6 +5417,141 @@ function toggleBrokerPanel() {
             // Store reference to starWorking for state logic
             window.starWorking = starWorking;
 
+            // === INTERACTIVE COMPUTER MONITOR ===
+            // Computer screen overlay with glow animation at desk position
+            const MONITOR_X = 225;
+            const MONITOR_Y = 305;
+            const SCREEN_W = 42;
+            const SCREEN_H = 32;
+
+            // Screen glow rectangle (simulates CRT monitor)
+            const screenGlow = this.add.rectangle(MONITOR_X, MONITOR_Y, SCREEN_W, SCREEN_H, 0x3498db, 0.25);
+            screenGlow.setDepth(999);
+            screenGlow.setBlendMode(Phaser.BlendModes.ADD);
+
+            // Scanline overlay effect
+            const scanlines = this.add.rectangle(MONITOR_X, MONITOR_Y, SCREEN_W, 1, 0xffffff, 0.08);
+            scanlines.setDepth(999);
+
+            // Blinking cursor on screen
+            const cursor = this.add.rectangle(MONITOR_X + 8, MONITOR_Y + 6, 6, 2, 0xffffff, 0.7);
+            cursor.setDepth(999);
+
+            // Code lines on screen (tiny pixel dots)
+            const codeLine1 = this.add.rectangle(MONITOR_X - 12, MONITOR_Y - 8, 18, 2, 0x2ecc71, 0.4);
+            codeLine1.setDepth(999);
+            const codeLine2 = this.add.rectangle(MONITOR_X - 6, MONITOR_Y - 3, 14, 2, 0x3498db, 0.3);
+            codeLine2.setDepth(999);
+            const codeLine3 = this.add.rectangle(MONITOR_X - 9, MONITOR_Y + 2, 20, 2, 0xe74c3c, 0.25);
+            codeLine3.setDepth(999);
+
+            // Store references
+            window.monitorScreen = screenGlow;
+            window.monitorCursor = cursor;
+            window.monitorScanline = scanlines;
+            window.monitorCodeLines = [codeLine1, codeLine2, codeLine3];
+
+            // Screen glow pulsing animation
+            this.tweens.add({
+                targets: screenGlow,
+                alpha: { from: 0.15, to: 0.35 },
+                duration: 2000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+
+            // Cursor blink animation
+            this.tweens.add({
+                targets: cursor,
+                alpha: { from: 0, to: 0.8 },
+                duration: 530,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Stepped',
+                hold: 400
+            });
+
+            // Scanline sweep animation (moves up/down)
+            this.tweens.add({
+                targets: scanlines,
+                y: { from: MONITOR_Y - SCREEN_H/2, to: MONITOR_Y + SCREEN_H/2 },
+                duration: 3000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Linear'
+            });
+
+            // Code lines subtle shimmer
+            this.tweens.add({
+                targets: [codeLine1, codeLine2, codeLine3],
+                alpha: { from: 0.15, to: 0.5 },
+                duration: 1500,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+                delay: this.tweens.stagger(300)
+            });
+
+            // Make monitor interactive - click area slightly larger than screen
+            const monitorHitArea = this.add.rectangle(MONITOR_X, MONITOR_Y + 5, SCREEN_W + 20, SCREEN_H + 30, 0x000000, 0);
+            monitorHitArea.setDepth(1000);
+            monitorHitArea.setInteractive({ useHandCursor: true });
+
+            // Click handler: trigger Work state + screen flash effect
+            monitorHitArea.on('pointerdown', () => {
+                // Flash screen bright on click
+                this.tweens.add({
+                    targets: screenGlow,
+                    alpha: 0.8,
+                    duration: 100,
+                    yoyo: true,
+                    ease: 'Power2'
+                });
+
+                // Set state to "work" (writing)
+                setState('writing', 'กำลังทำงาน (คลิกจากคอมพิวเตอร์)');
+
+                // Show typing animation on code lines
+                const colors = [0x2ecc71, 0x3498db, 0xe74c3c, 0xf39c12, 0x9b59b6];
+                window.monitorCodeLines.forEach((line, idx) => {
+                    this.time.delayedCall(idx * 200, () => {
+                        const randColor = colors[Math.floor(Math.random() * colors.length)];
+                        line.setFillStyle(randColor, 0.6);
+                        const randW = 8 + Math.floor(Math.random() * 18);
+                        line.setSize(randW, 2);
+                        this.tweens.add({
+                            targets: line,
+                            alpha: { from: 0.7, to: 0.3 },
+                            duration: 800,
+                            ease: 'Power1'
+                        });
+                    });
+                });
+            });
+
+            // Hover effect: brighten screen
+            monitorHitArea.on('pointerover', () => {
+                screenGlow.setFillStyle(0x5dade2, 0.4);
+            });
+            monitorHitArea.on('pointerout', () => {
+                screenGlow.setFillStyle(0x3498db, 0.25);
+            });
+
+            // Function to update screen color based on state
+            window.updateMonitorColor = function(state) {
+                const colorMap = {
+                    'idle': 0x3498db,
+                    'writing': 0x2ecc71,
+                    'syncing': 0xf1c40f,
+                    'error': 0xe74c3c
+                };
+                const color = colorMap[state] || 0x3498db;
+                if (window.monitorScreen) {
+                    window.monitorScreen.setFillStyle(color, 0.25);
+                }
+            };
+
             // Sync animation sprite at (1157,592)
             const syncFrameTotal = Number(this.textures.get('sync_anim')?.frameTotal || 0);
             const syncFrameStart = 1;
@@ -5849,6 +5984,8 @@ function toggleBrokerPanel() {
                             currentState = nextState;
                         }
                         applyVisualState(nextState);
+                        // Update monitor screen color based on state
+                        if (window.updateMonitorColor) window.updateMonitorColor(nextState);
 
                         if (changed) {
                             typewriterTarget = nextLine;
