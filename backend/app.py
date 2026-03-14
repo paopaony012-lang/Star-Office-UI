@@ -159,7 +159,7 @@ def add_no_cache_headers(response):
 # Default state
 DEFAULT_STATE = {
     "state": "idle",
-    "detail": "等待任务中...",
+    "detail": "สแตนด์บาย (รอคำสั่ง...)",
     "progress": 0,
     "updated_at": datetime.now().isoformat()
 }
@@ -201,7 +201,7 @@ def load_state():
                 age = (datetime.now() - dt).total_seconds()
             if age > ttl:
                 state["state"] = "idle"
-                state["detail"] = "待命中（自动回到休息区）"
+                state["detail"] = "สแตนด์บาย (กลับพื้นที่พักอัตโนมัติ)"
                 state["progress"] = 0
                 state["updated_at"] = datetime.now().isoformat()
                 # persist the auto-idle so every client sees it consistently
@@ -875,7 +875,7 @@ DEFAULT_AGENTS = [
         "name": "Star",
         "isMain": True,
         "state": "idle",
-        "detail": "待命中，随时准备为你服务",
+        "detail": "สแตนด์บาย พร้อมรับคำสั่งทุกเมื่อ",
         "updated_at": datetime.now().isoformat(),
         "area": "breakroom",
         "source": "local",
