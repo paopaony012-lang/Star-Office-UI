@@ -323,6 +323,32 @@ def index():
     resp.headers["Content-Type"] = "text/html; charset=utf-8"
     return resp
 
+@app.route("/manifest.json", methods=["GET"])
+def serve_manifest():
+    """Serve PWA manifest from frontend directory."""
+    manifest_path = os.path.join(FRONTEND_DIR, "manifest.json")
+    if os.path.exists(manifest_path):
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        resp = make_response(content)
+        resp.headers["Content-Type"] = "application/manifest+json"
+        return resp
+    return "", 404
+
+
+@app.route("/sw.js", methods=["GET"])
+def serve_sw():
+    """Serve service worker from frontend directory."""
+    sw_path = os.path.join(FRONTEND_DIR, "sw.js")
+    if os.path.exists(sw_path):
+        with open(sw_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        resp = make_response(content)
+        resp.headers["Content-Type"] = "application/javascript"
+        resp.headers["Service-Worker-Allowed"] = "/"
+        return resp
+    return "", 404
+
 
 @app.route("/electron-standalone", methods=["GET"])
 def electron_standalone_page():

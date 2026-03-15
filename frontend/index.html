@@ -1469,22 +1469,22 @@
                 <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px;">
                     <div class="dash-card" style="cursor:pointer;" onclick="switchAffiliateTab('calendar')" title="ดูงานทั้งหมด">
                         <div class="card-icon">📋</div>
-                        <div class="card-value" id="ov-tasks" style="color:#38bdf8;">-</div>
+                        <div class="card-value" id="ov-tasks-pending" style="color:#38bdf8;">0</div>
                         <div class="card-label">งานทั้งหมด</div>
                     </div>
                     <div class="dash-card" style="cursor:pointer;" onclick="switchAffiliateTab('calendar')" title="ดูงานสำเร็จ">
                         <div class="card-icon">✅</div>
-                        <div class="card-value" id="ov-tasks-done" style="color:#34d399;">-</div>
+                        <div class="card-value" id="ov-tasks-done" style="color:#34d399;">0</div>
                         <div class="card-label">งานสำเร็จ</div>
                     </div>
                     <div class="dash-card" style="cursor:pointer;" onclick="switchAffiliateTab('inventory')" title="คลังสินค้า">
                         <div class="card-icon">🛍️</div>
-                        <div class="card-value" id="ov-products" style="color:#f9a8d4;">-</div>
+                        <div class="card-value" id="ov-products" style="color:#f9a8d4;">0</div>
                         <div class="card-label">สินค้าในคลัง</div>
                     </div>
                     <div class="dash-card" style="cursor:pointer;" onclick="switchAffiliateTab('ads')" title="Ad Logs">
                         <div class="card-icon">🤖</div>
-                        <div class="card-value" id="ov-ads" style="color:#fbbf24;">-</div>
+                        <div class="card-value" id="ov-ads" style="color:#fbbf24;">0</div>
                         <div class="card-label">Ad Logs</div>
                     </div>
                 </div>
@@ -1681,19 +1681,55 @@
             <!-- Tab: Ads Scaler -->
             <div id="tab-ads" class="affiliate-pane">
                 <div style="color:#14b8a6; font-size:13px; line-height:1.5;">📈 บอทนักยิงแอด (Auto Ad-Scaler)<br/>ปรับงบ TikTok/Shopee Ads อัตโนมัติตาม ROAS</div>
+                
+                <!-- Quick Stats -->
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:8px;">
+                    <div style="background:rgba(16,185,129,0.15); border:1px solid #10b981; border-radius:6px; padding:8px; text-align:center;">
+                        <div style="color:#10b981; font-size:16px; font-weight:bold;" id="ads-active-count">0</div>
+                        <div style="color:#94a3b8; font-size:10px;">แคมเปญ Active</div>
+                    </div>
+                    <div style="background:rgba(251,191,36,0.15); border:1px solid #fbbf24; border-radius:6px; padding:8px; text-align:center;">
+                        <div style="color:#fbbf24; font-size:16px; font-weight:bold;" id="ads-avg-roas">-</div>
+                        <div style="color:#94a3b8; font-size:10px;">ROAS เฉลี่ย</div>
+                    </div>
+                    <div style="background:rgba(56,189,248,0.15); border:1px solid #38bdf8; border-radius:6px; padding:8px; text-align:center;">
+                        <div style="color:#38bdf8; font-size:16px; font-weight:bold;" id="ads-total-spend">฿0</div>
+                        <div style="color:#94a3b8; font-size:10px;">งบรวมวันนี้</div>
+                    </div>
+                </div>
+
+                <!-- Rule Engine -->
                 <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:6px; border:1px solid #0f766e; margin-top:8px;">
                     <div style="display:flex; justify-content:space-between; color:#ecfdf5; font-size:12px; margin-bottom:8px;">
-                        <span>ระบบ Auto-Scaler (AI)</span>
+                        <span>🤖 ระบบ Auto-Scaler (AI)</span>
                         <label class="switch" style="position:relative; display:inline-block; width:34px; height:20px;">
                             <input type="checkbox" id="ad-bot-toggle" onchange="toggleAdBot()" style="opacity:0; width:0; height:0;">
                             <span style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#475569; transition:.4s; border-radius:34px;" id="ad-bot-slider"></span>
                         </label>
                     </div>
-                    <div style="color:#94a3b8; font-size:11px; margin-bottom:8px;">กฎเกณฑ์อัตโนมัติ (Rule Engine):</div>
-                    <div style="background:#1e293b; padding:8px; border-radius:4px; font-size:12px; color:#a7f3d0; margin-bottom:4px;">✅ ถ้ากำไร (ROAS) > 3.0 : เพิ่มงบ +500 บ./วัน</div>
-                    <div style="background:#1e293b; padding:8px; border-radius:4px; font-size:12px; color:#fca5a5;">❌ ถ้ากำไร (ROAS) < 1.2 : ปิดแอด (Pause) คลิปนั้นทันที</div>
+                    <div style="color:#94a3b8; font-size:11px; margin-bottom:6px;">⚙️ กฎเกณฑ์อัตโนมัติ (Rule Engine):</div>
+                    <div style="display:flex; gap:6px; margin-bottom:4px;">
+                        <div style="flex:1; background:#1e293b; padding:8px; border-radius:4px; font-size:11px; color:#a7f3d0;">✅ ROAS > <input type="number" id="roas-up-threshold" value="3.0" step="0.1" min="1" style="width:40px; background:#0f172a; color:#a7f3d0; border:1px solid #334155; border-radius:3px; text-align:center; font-family:'ArkPixel'; font-size:11px;"> → เพิ่มงบ +<input type="number" id="budget-increase" value="500" step="100" min="0" style="width:50px; background:#0f172a; color:#a7f3d0; border:1px solid #334155; border-radius:3px; text-align:center; font-family:'ArkPixel'; font-size:11px;"> บ./วัน</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <div style="flex:1; background:#1e293b; padding:8px; border-radius:4px; font-size:11px; color:#fca5a5;">❌ ROAS < <input type="number" id="roas-down-threshold" value="1.2" step="0.1" min="0" style="width:40px; background:#0f172a; color:#fca5a5; border:1px solid #334155; border-radius:3px; text-align:center; font-family:'ArkPixel'; font-size:11px;"> → ปิดแอดทันที</div>
+                    </div>
                 </div>
-                <div id="ad-log" style="color:#cbd5e1; font-size:11px; margin-top:8px; background:#0f172a; padding:8px; border-radius:4px; font-family:monospace; min-height:60px;">[System] รอเปิดระบบบอทยิงแอด...</div>
+
+                <!-- Daily Budget -->
+                <div style="display:flex; gap:6px; margin-top:8px;">
+                    <input type="number" id="daily-budget-cap" placeholder="งบสูงสุด/วัน (฿)" value="5000" style="flex:1; padding:8px; border-radius:6px; border:1px solid #334155; background:#1e293b; color:#fff; font-family:'ArkPixel'; font-size:11px;">
+                    <button onclick="saveAdsConfig()" style="background:#10b981; color:#fff; border:none; border-radius:6px; padding:8px 12px; cursor:pointer; font-family:'ArkPixel'; font-size:11px;">💾 บันทึก</button>
+                </div>
+
+                <!-- Quick Actions -->
+                <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:6px; margin-top:8px;">
+                    <button onclick="viewAdsReport()" style="background:#1e40af; color:#fff; border:none; border-radius:6px; padding:8px; cursor:pointer; font-family:'ArkPixel'; font-size:11px;">📊 ดูรายงาน Ads</button>
+                    <button onclick="pauseAllAds()" style="background:#dc2626; color:#fff; border:none; border-radius:6px; padding:8px; cursor:pointer; font-family:'ArkPixel'; font-size:11px;">⏸️ Pause ทุกแคมเปญ</button>
+                </div>
+
+                <!-- Log Output -->
+                <div id="ad-log" style="color:#cbd5e1; font-size:11px; margin-top:8px; background:#0f172a; padding:8px; border-radius:4px; font-family:monospace; min-height:60px; max-height:200px; overflow-y:auto;">[System] รอเปิดระบบบอทยิงแอด...</div>
             </div>
 
             <!-- Tab: Inventory (Product Stock) -->
@@ -7429,6 +7465,59 @@ You have access to the team's current data:${context}`;
                 log.innerHTML = `<span style="color:#f87171;">เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว</span>`;
                 adBotActive = !adBotActive; // revert status
                 document.getElementById('ad-bot-toggle').checked = adBotActive;
+            }
+        }
+
+        // Alias for autoScaleAds (backward compat)
+        function autoScaleAds() { toggleAdBot(); }
+
+        // Save ads config
+        function saveAdsConfig() {
+            const config = {
+                roasUp: document.getElementById('roas-up-threshold').value,
+                roasDown: document.getElementById('roas-down-threshold').value,
+                budgetIncrease: document.getElementById('budget-increase').value,
+                dailyCap: document.getElementById('daily-budget-cap').value
+            };
+            localStorage.setItem('adsConfig', JSON.stringify(config));
+            const log = document.getElementById('ad-log');
+            log.innerHTML += '<br><span style="color:#34d399;">[Config] บันทึกค่า ROAS/Budget สำเร็จ ✅</span>';
+        }
+
+        // View ads report
+        function viewAdsReport() {
+            const log = document.getElementById('ad-log');
+            if(!supabaseClient) {
+                log.innerHTML = '<span style="color:#f87171;">กรุณาตั้งค่า Supabase ก่อนครับ</span>';
+                return;
+            }
+            supabaseClient.from('ads_logs').select('*').order('created_at', { ascending: false }).limit(20).then(res => {
+                if(res.error) { log.innerHTML = '<span style="color:#f87171;">โหลดรายงานล้มเหลว: ' + res.error.message + '</span>'; return; }
+                if(!res.data || res.data.length === 0) { log.innerHTML = '<span style="color:#94a3b8;">ยังไม่มีข้อมูล Ads Log</span>'; return; }
+                let html = '<span style="color:#38bdf8;font-weight:bold;">📊 รายงาน Ads Log (ล่าสุด 20 รายการ)</span><br>';
+                let totalRoas = 0;
+                res.data.forEach(l => {
+                    const roas = parseFloat(l.roas || 0);
+                    totalRoas += roas;
+                    const color = roas > 3 ? '#34d399' : roas < 1.2 ? '#f87171' : '#fbbf24';
+                    html += `<span style="color:${color};">[${l.campaign_name}] ROAS: ${roas.toFixed(1)}</span> — ${l.action || 'N/A'}<br>`;
+                });
+                const avgRoas = (totalRoas / res.data.length).toFixed(2);
+                html += '<br><span style="color:#38bdf8;">ROAS เฉลี่ย: ' + avgRoas + '</span>';
+                log.innerHTML = html;
+                document.getElementById('ads-avg-roas').textContent = avgRoas;
+                document.getElementById('ads-active-count').textContent = res.data.length;
+            });
+        }
+
+        // Pause all ads
+        function pauseAllAds() {
+            document.getElementById('ad-bot-toggle').checked = false;
+            adBotActive = false;
+            const log = document.getElementById('ad-log');
+            log.innerHTML = '<span style="color:#f87171;">[System] ⏸️ Pause แคมเปญทั้งหมดแล้ว — ระบบ Auto-Scaler หยุดทำงาน</span>';
+            if(supabaseClient) {
+                supabaseClient.from('ads_logs').insert([{campaign_name: 'System', roas: 0, action: '⏸️ Pause All — Manual Override'}]).then();
             }
         }
         
