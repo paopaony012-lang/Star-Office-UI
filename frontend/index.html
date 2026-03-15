@@ -6370,8 +6370,17 @@ function toggleBrokerPanel() {
             tabs.forEach(t => t.classList.remove('active'));
             panes.forEach(p => p.classList.remove('active'));
             
-            event.currentTarget.classList.add('active');
-            document.getElementById('tab-' + tabName).classList.add('active');
+            // Find matching tab by onclick content or use event.currentTarget if available
+            const matchingTab = Array.from(tabs).find(t => 
+                t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + tabName + "'")
+            );
+            if (matchingTab) matchingTab.classList.add('active');
+            else if (typeof event !== 'undefined' && event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+            
+            const pane = document.getElementById('tab-' + tabName);
+            if (pane) pane.classList.add('active');
             
             if(tabName === 'overview') loadOverviewDashboard();
             if(tabName === 'inventory') loadInventoryProducts();
